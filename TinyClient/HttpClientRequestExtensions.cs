@@ -6,7 +6,6 @@ namespace TinyClient
 {
     public static class HttpClientRequestExtensions
     {
-      
         public static HttpClientRequest SetMultipartContent(
             this HttpClientRequest request, 
             string boundary , 

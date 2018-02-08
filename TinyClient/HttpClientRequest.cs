@@ -58,6 +58,15 @@ namespace TinyClient
         public KeyValuePair<string, string>[] CustomHeaders => headers.ToArray();
         public TimeSpan? Timeout { get; private set; }
 
+        /// <summary>
+        /// Full query path, includes Query and UriParams (without host)
+        /// Starts with '/'
+        /// 
+        /// Example: "/search?text=hi"
+        /// </summary>
+        public string QueryAbsolutePath => UriHelper.GetQuery(Query, queryParams);
+
+        public Uri GetUriFor(string host) => UriHelper.BuildUri(host, Query, queryParams);
 
         /// <summary>
         /// Adds or replace custom request header.
@@ -131,35 +140,7 @@ namespace TinyClient
             var convertible = paramValue as IConvertible;
             return convertible?.ToString(CultureInfo.InvariantCulture) ?? paramValue.ToString();
         }
-        public string QueryAbsolutePath 
-        {
-            get { throw new InvalidOperationException(); }
-        }
-
-        public Uri GetUriFor(string host) {
-          
-            return UriHelper.BuildUri(host, Query, queryParams);
-        }
-        /*
-        public Uri GetUriFor(Uri host)
-        {
-            var uriBuilder = new UriBuilder(host);
-
-            if (!string.IsNullOrEmpty(subQuery))
-                uriBuilder.Path = VirtualPathUtility.Combine(uriBuilder.Path, subQuery);
-
-            if (queryParams.Any())
-            {
-                var collection = HttpUtility.ParseQueryString(string.Empty);
-                foreach (var kvp in queryParams)
-                    collection.Add(kvp.Key, kvp.Value);
-
-
-                uriBuilder.Query = collection.ToString();
-            }
-
-            return uriBuilder.Uri;
-        }*/
+        
     }
 
     public enum KeepAliveMode

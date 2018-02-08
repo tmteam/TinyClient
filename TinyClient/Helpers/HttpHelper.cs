@@ -15,29 +15,34 @@ namespace TinyClient.Helpers
                 uriParams.Select(kv => kv.Key + "=" + UrlEncode(kv.Value)));
         }
 
-
-        public static Uri BuildUri(string host, string subQuery, IEnumerable<KeyValuePair<string, string>> uriParams)
+        public static string GetQuery(string subQuery, IEnumerable<KeyValuePair<string, string>> uriParams)
         {
-            string path;
-            if(!string.IsNullOrWhiteSpace(host) && !string.IsNullOrWhiteSpace(subQuery))
-                path = host.TrimEnd('/') + "/" + subQuery.TrimStart('/');
-            else
-                path = host + subQuery;
-
+            var path = subQuery;
             var queryParams = CreateQuery(uriParams);
             if (!string.IsNullOrWhiteSpace(queryParams))
             {
                 if (!path.Contains('?'))
                     path += '?' + queryParams;
                 else
-                    path += queryParams;
+                    path += '&' + queryParams;
             }
+
+            return '/'+path.TrimStart('/');
+        }
+        public static Uri BuildUri(string host, string subQuery, IEnumerable<KeyValuePair<string, string>> uriParams)
+        {
+            var query = GetQuery(subQuery, uriParams);
+
+            string path;
+            if(!string.IsNullOrWhiteSpace(host) && !string.IsNullOrWhiteSpace(query))
+                path = host.TrimEnd('/') + query;
+            else
+                path = host + subQuery;
 
             if (!path.Contains("://"))
                 path = "http://" + path;
 
             return new Uri(path);
-
         }
         public static void Write(this Stream stream, byte[] data)
         {

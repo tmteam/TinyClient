@@ -9,12 +9,12 @@ namespace TinyClient
 {
     public class MultipartContent : IContent
     {
-        private readonly HttpClientRequest[] _subRequests;
+        public HttpClientRequest[] SubRequests { get; }
         private readonly string _boundary;
 
         public MultipartContent(HttpClientRequest[] subRequests, string boundary)
         {
-            _subRequests = subRequests;
+            SubRequests = subRequests;
             _boundary = boundary;
         }
 
@@ -23,7 +23,7 @@ namespace TinyClient
         {
             var stream = new MemoryStream();
             var sb = new StringBuilder();
-            foreach (var request in _subRequests)
+            foreach (var request in SubRequests)
             {
 
                 sb.AppendLine(BatchParseHelper.GetOpenBoundaryString(_boundary));
