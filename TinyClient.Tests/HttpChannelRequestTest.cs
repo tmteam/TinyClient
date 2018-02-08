@@ -58,11 +58,24 @@ namespace TinyClient.Tests
                 actual: uri.AbsoluteUri);
         }
 
-        [Test]
-        public void SetMultipleUrlParamAndSubQuery_GetUriFor_UriIsCorrect()
+        [TestCase("http://www.ya.ru", "search")]
+        [TestCase("https://www.ya.ru", "search")]
+        [TestCase("http://www.ya.ru:9405", "search")]
+        [TestCase("https://www.ya.ru:9405", "search")]
+        [TestCase("http://localhost:9010/", "/search")]
+        [TestCase("http://www.ya.ru", "/search")]
+        [TestCase("https://www.ya.ru", "/search")]
+        [TestCase("http://www.ya.ru:9405", "/search")]
+        [TestCase("https://www.ya.ru:9405", "/search")]
+        [TestCase("http://localhost:9010/", "/search")]
+        [TestCase("http://www.ya.ru", "search/")]
+        [TestCase("https://www.ya.ru", "search/")]
+        [TestCase("http://www.ya.ru:9405", "search/")]
+        [TestCase("https://www.ya.ru:9405", "search/")]
+        [TestCase("http://localhost:9010/", "search/")]
+
+        public void SetMultipleUrlParamAndSubQuery_GetUriFor_UriIsCorrect(string host, string subquery)
         {
-            var host = "http://www.ya.ru";
-            var subquery = "search";
             string[] paramNames = { "var1", "var2", "var3" };
             object[] paramValues = { "foo", 0, false };
             object[] paramValuesInQuery = { "foo", "0", "False"};
@@ -75,10 +88,43 @@ namespace TinyClient.Tests
             }
 
             var uri = request.GetUriFor(host);
+            var expected =
+                $"{host.TrimEnd('/')}/{subquery.TrimStart('/')}?{paramNames[0]}={paramValuesInQuery[0]}&{paramNames[1]}={paramValuesInQuery[1]}&{paramNames[2]}={paramValuesInQuery[2]}";
             Assert.AreEqual(
-                expected: $"{host}/{subquery}?{paramNames[0]}={paramValuesInQuery[0]}&{paramNames[1]}={paramValuesInQuery[1]}&{paramNames[2]}={paramValuesInQuery[2]}",
+                expected: expected,
                 actual: uri.AbsoluteUri);
         }
+
+        [TestCase("http://www.ya.ru", "api/session?userId=6567&userSecret=65676567")]
+        [TestCase("https://www.ya.ru", "api/session?userId=6567&userSecret=65676567")]
+        [TestCase("http://www.ya.ru:9405", "api/session?userId=6567&userSecret=65676567")]
+        [TestCase("https://www.ya.ru:9405", "api/session?userId=6567&userSecret=65676567")]
+        [TestCase("http://localhost:9010/", "/api/session?userId=6567&userSecret=65676567")]
+        [TestCase("http://www.ya.ru", "/api/session?userId=6567&userSecret=65676567")]
+        [TestCase("https://www.ya.ru", "/api/session?userId=6567&userSecret=65676567")]
+        [TestCase("http://www.ya.ru:9405", "/api/session?userId=6567&userSecret=65676567")]
+        [TestCase("https://www.ya.ru:9405", "/api/session?userId=6567&userSecret=65676567")]
+        [TestCase("http://localhost:9010/", "/api/session?userId=6567&userSecret=65676567")]
+        [TestCase("http://www.ya.ru", "api/session?userId=6567&userSecret=65676567/")]
+        [TestCase("https://www.ya.ru", "api/session?userId=6567&userSecret=65676567/")]
+        [TestCase("http://www.ya.ru:9405", "api/session?userId=6567&userSecret=65676567/")]
+        [TestCase("https://www.ya.ru:9405", "api/session?userId=6567&userSecret=65676567/")]
+        [TestCase("http://localhost:9010/", "api/session?userId=6567&userSecret=65676567/")]
+        public void SetSubQuery_GetUriFor_UriIsCorrect(string host, string subquery)
+        {
+            var request = HttpClientRequest.CreateGet(subquery);
+
+         
+            var uri = request.GetUriFor(host);
+            var expected =
+                $"{host.TrimEnd('/')}/{subquery.TrimStart('/')}";
+            Assert.AreEqual(
+                expected: expected,
+                actual: uri.AbsoluteUri);
+        }
+
+       
+
         [Test]
         public void SetMethodName_BuildFor_MethodNameEquals()
         {

@@ -63,7 +63,7 @@
   <ItemGroup>
     <Compile Include="BatchParseHelperTest.cs" />
     <Compile Include="JsonRequestTest.cs" />
-    <Compile Include="HttpChannelRequestBuilderTest.cs" />
+    <Compile Include="HttpChannelRequestTest.cs" />
     <Compile Include="MultipartRequestDeserializerTest.cs" />
     <Compile Include="PeekableStreamReaderTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
