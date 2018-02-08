@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
@@ -14,36 +15,31 @@ namespace HttpClientChannel.TestApplication
     {
         static void Main(string[] args)
         {
-            var dto = new SomeDto
-            {
-                Name = "vasa",
-                Surname = "rocky",
-                Age = 43
-            };
+            var client = new HttpClient("http://myHost.io");
+            //Simple request:
+            var received = client.PostAndReceiveJson<MyAnswerVm>("/getMyAnswer", new MyRequestVM { Name = "Bender"});
+            Console.WriteLine(received);
+            //need not to close connection
 
-            var request = HttpClientRequest
-                .CreateJsonPost("api/test")
-                .SetContent(new JsonContent(dto));
+            //Custom request
+            //request uri is http://myHost.io/getMyAnswer/?text=What+up&attributes=all
+            var customRequest = HttpClientRequest
+                .Create(HttpMethod.Post, "/search")
+                .AddUriParam("text", "What up")
+                .AddUriParam("attributes", "all")
+                .AddCustomHeader("nugetPackage", "tinyClient")
+                .AddCustomHeader("_SessionId", "42")
+                .SetKeepAlive(true)
+                .SetTimeout(TimeSpan.FromSeconds(5))
+                .SetContent(new JsonContent(new MyRequestVM {Name = "Cartman"}));
 
-            Stopwatch sw = new Stopwatch();
-
-
-            
-            var client = new HttpClient("http://demo7875676.mockable.io", keepAlive: true);
-
-            client.Timeout = TimeSpan.FromSeconds(1);
-            for (int j = 0; j < 1000; j++)
-            {
-                sw.Restart();
-                var ans = client.SendGet("/gettest/");
-                sw.Stop();
-                Console.WriteLine("res: " + sw.ElapsedMilliseconds);
-                Thread.Sleep(10000);
-            }
-            Console.ReadLine();
+            var response = client.Send(customRequest);
+            var textResponse = response as HttpChannelResponse<string>;
+            Console.WriteLine(textResponse.Content);
         }
     }
-    public class SomeDto
+    public class MyAnswerVm { }
+    public class MyRequestVM
     {
         [JsonProperty]
         public string Name { get; set; }

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>TinyClient</id>
+    <version>1.0.0</version>
+    <title>Tiny Http Client</title>
+    <authors>Tmteam</authors>
+    <licenseUrl>https://github.com/tmteam/TinyClient/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/tmteam/TinyClient</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Http client for Net framework 4</description>
+    <releaseNotes>Init package</releaseNotes>
+    <copyright>Copyright 2018</copyright>
+    <tags>Http Client NetFramework4 Rest</tags>
+  </metadata>
+</package>
