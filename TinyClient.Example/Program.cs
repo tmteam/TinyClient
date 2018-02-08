@@ -16,20 +16,12 @@ namespace HttpClientChannel.TestApplication
     {
         static void Main(string[] args)
         {
-            var c = new HttpClient("http://localhost:61470");
-            var req = HttpClientRequest
-                .Create(HttpMethod.Get, "api/test")
-                .AddUriParam("name", "vasa")
-                .AddUriParam("age", 42);
-            var resp = c.Send(req);
-
-
             var client = new HttpClient("http://myHost.io");
             //Simple request:
             var received = client.PostAndReceiveJson<MyAnswerVm>("/getMyAnswer", new MyRequestVM { Name = "Bender"});
             Console.WriteLine(received);
-            //need not to close connection
-
+            //need no to close connection
+            
             //Custom client:
             var customClient = HttpClient
                 .Create("http://myHost.io")
@@ -41,6 +33,7 @@ namespace HttpClientChannel.TestApplication
                             throw new FormatException("Request failed with error: " + r.StatusCode);
                     }
                 ).Build();
+            
             //Custom request
             //request uri is http://myHost.io/getMyAnswer/?text=What+up&attributes=all
             var customRequest = HttpClientRequest
