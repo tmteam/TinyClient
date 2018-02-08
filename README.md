@@ -3,6 +3,7 @@ Http client for .Net 4.0 framework (without bcl)
 
 #Example
 
+```
 var client = new HttpClient("http://myHost.io");
 
 //##Simple request:
@@ -25,5 +26,5 @@ var customRequest = HttpClientRequest
 var response = client.Send(customRequest);
 var textResponse = response as HttpChannelResponse<string>;
 Console.WriteLine(textResponse.Content);
-  
+```  
   
