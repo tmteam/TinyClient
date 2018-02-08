@@ -11,14 +11,17 @@ namespace TinyClient
         private readonly bool _keepAlive;
         private readonly IHttpSender _sender;
 
-        public static HttpClient CreateWithCustomSender(IHttpSender sender, string host, bool keepAlive) 
-            => new HttpClient(sender,host, keepAlive);
+        public static HttpClientBuilder Create(string host) => new HttpClientBuilder(host);
 
-        private HttpClient(IHttpSender sender, string host, bool keepAlive)
+        public HttpClient(HttpClientBuilder builder)
         {
-            _host = host;
-            _keepAlive = keepAlive;
-            _sender = sender;
+            _host = builder.Host;
+            _keepAlive = builder.KeepAlive;
+            _sender = builder.Sender?? new HttpSenderAsync(_host);
+            Timeout = builder.Timeout;
+            _requestPreprocessor = builder.RequestMiddleware;
+            _responsePreprocessor = builder.ResponseMiddleware;
+
         }
         public HttpClient(string host, bool keepAlive = true)
         {
@@ -29,23 +32,15 @@ namespace TinyClient
 
         public TimeSpan? Timeout { get; set; } = TimeSpan.FromSeconds(10);
 
-        private Func<HttpClientRequest, HttpClientRequest> _requestPreprocessor = null;
+        private readonly Func<HttpClientRequest, HttpClientRequest> _requestPreprocessor = null;
 
-        private Func<IHttpResponse, IHttpResponse> _responsePreprocessor = null;
+        private readonly Func<IHttpResponse, IHttpResponse> _responsePreprocessor = null;
 
-        public HttpClient PreprocessRequestsWith(Func<HttpClientRequest, HttpClientRequest> preprocess) {
-            _requestPreprocessor = preprocess;
-            return this;
-        }
-
-        public HttpClient PreprocessResponseWith(Func<IHttpResponse, IHttpResponse> reaction) {
-            _responsePreprocessor = reaction;
-            return this;
-        }
 
 
         /// <exception cref="WebException"></exception>
         /// <exception cref="InvalidDataException"></exception>
+        /// <exception cref="TimeoutException"></exception>
         public IHttpResponse Send(HttpClientRequest request)
         {
             if (!request.Timeout.HasValue && Timeout.HasValue)

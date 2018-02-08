@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("HttpClientChannel")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("TinyClient")]
+[assembly: AssemblyDescription("Http client for .net framework 4.0")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("HttpClientChannel")]
+[assembly: AssemblyProduct("TinyClient")]
 [assembly: AssemblyCopyright("Copyright ©  2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

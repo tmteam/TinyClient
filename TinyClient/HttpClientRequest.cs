@@ -63,9 +63,22 @@ namespace TinyClient
         public TimeSpan? Timeout { get; private set; }
 
 
+        /// <summary>
+        /// Adds or replace custom request header.
+        /// </summary>
         public HttpClientRequest AddCustomHeader(string key, string value)
         {
-            headers.Add(key, value);
+            headers[key] = value;
+            return this;
+        }
+
+        /// <summary>
+        /// Adds custom request header.
+        /// </summary>
+        /// <exception cref="ArgumentException">header is already exist</exception>
+        public HttpClientRequest AddCustomHeaderOrThrow(string key, string value)
+        {
+            headers.Add(key,value);
             return this;
         }
 

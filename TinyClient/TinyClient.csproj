@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="HttpClient.cs" />
+    <Compile Include="HttpClientBuilder.cs" />
     <Compile Include="HttpClientExtensions.cs" />
     <Compile Include="Client\HttpSender.cs" />
     <Compile Include="Client\AsyncRequest.cs" />

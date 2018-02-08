@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Security.Policy;
 using System.Text;
 using System.Threading;
@@ -15,12 +16,25 @@ namespace HttpClientChannel.TestApplication
     {
         static void Main(string[] args)
         {
+            Dictionary<string, string> test = new Dictionary<string, string>();
+            test["lala"] = "uu";
             var client = new HttpClient("http://myHost.io");
             //Simple request:
             var received = client.PostAndReceiveJson<MyAnswerVm>("/getMyAnswer", new MyRequestVM { Name = "Bender"});
             Console.WriteLine(received);
             //need not to close connection
 
+            //Custom client:
+            var customClient = HttpClient
+                .Create("http://myHost.io")
+                .WithKeepAlive(true)
+                .WithRequestTimeout(TimeSpan.FromSeconds(1))
+                .WithRequestMiddleware((r) => r.AddCustomHeader("sentBy", "customHeader"))
+                .WithResponseMiddleware((r) => {
+                        if (r.StatusCode != HttpStatusCode.OK)
+                            throw new FormatException("Request failed with error: " + r.StatusCode);
+                    }
+                ).Build();
             //Custom request
             //request uri is http://myHost.io/getMyAnswer/?text=What+up&attributes=all
             var customRequest = HttpClientRequest
@@ -33,7 +47,7 @@ namespace HttpClientChannel.TestApplication
                 .SetTimeout(TimeSpan.FromSeconds(5))
                 .SetContent(new JsonContent(new MyRequestVM {Name = "Cartman"}));
 
-            var response = client.Send(customRequest);
+            var response = customClient.Send(customRequest);
             var textResponse = response as HttpChannelResponse<string>;
             Console.WriteLine(textResponse.Content);
         }
