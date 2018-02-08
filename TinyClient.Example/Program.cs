@@ -16,13 +16,15 @@ namespace HttpClientChannel.TestApplication
     {
         static void Main(string[] args)
         {
+            //Simple way:
             var client = new HttpClient("http://myHost.io");
-            //Simple request:
-            var received = client.PostAndReceiveJson<MyAnswerVm>("/getMyAnswer", new MyRequestVM { Name = "Bender"});
-            Console.WriteLine(received);
+            var received = client.PostAndReceiveJson<MyAnswerVm>(
+                query: "getMyAnswer", 
+                jsonSerializeableContent:  new MyRequestVM { Name = "Bender"});
+            Console.WriteLine(received.Name);
             //need no to close connection
             
-            //Custom client:
+            //Custom way:
             var customClient = HttpClient
                 .Create("http://myHost.io")
                 .WithKeepAlive(true)
@@ -34,8 +36,7 @@ namespace HttpClientChannel.TestApplication
                     }
                 ).Build();
             
-            //Custom request
-            //request uri is http://myHost.io/getMyAnswer/?text=What+up&attributes=all
+            //request uri is http://myHost.io/search?text=What+up&attributes=all
             var customRequest = HttpClientRequest
                 .Create(HttpMethod.Post, "/search")
                 .AddUriParam("text", "What up")
@@ -51,7 +52,11 @@ namespace HttpClientChannel.TestApplication
             Console.WriteLine(textResponse.Content);
         }
     }
-    public class MyAnswerVm { }
+
+    public class MyAnswerVm
+    {
+        public string Name { get; }
+    }
     public class MyRequestVM
     {
         [JsonProperty]
