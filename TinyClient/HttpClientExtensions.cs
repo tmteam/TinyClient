@@ -60,7 +60,7 @@ namespace TinyClient
         {
             var response = client.Send(request);
 
-            var stringResponse = response as HttpChannelResponse<string>;
+            var stringResponse = response as HttpResponse<string>;
             if (stringResponse == null)
                 throw new InvalidDataException("Unexpected response format");
             return JsonHelper.Deserialize<TJsonObject>(stringResponse.Content);
@@ -73,21 +73,21 @@ namespace TinyClient
         /// <exception cref="JsonException">Ошибки сериализации или десериализации Json-объектов</exception>
         /// <exception cref="InvalidDataException">Ошибка формата принятых данных </exception>
         /// <exception cref="TimeoutException"></exception>
-        public static HttpChannelResponse<string> GetAndReceiveText(this HttpClient client, string query) 
+        public static HttpResponse<string> GetAndReceiveText(this HttpClient client, string query) 
             => client.SendAndReceiveText(HttpClientRequest.CreateGet(query));
 
         /// <exception cref="WebException">Ошибка при запросе</exception>
         /// <exception cref="JsonException">Ошибки сериализации или десериализации Json-объектов</exception>
         /// <exception cref="InvalidDataException">Ошибка формата принятых данных </exception>
         /// <exception cref="TimeoutException"></exception>
-        public static HttpChannelResponse<string> PutAndReceiveText<TResponseJsonObject>(this HttpClient client, string query,
+        public static HttpResponse<string> PutAndReceiveText<TResponseJsonObject>(this HttpClient client, string query,
             object jsonSerializeableContent) => client.SendAndReceiveText(HttpClientRequest.CreateJsonPut(query, jsonSerializeableContent));
 
         /// <exception cref="WebException">Ошибка при запросе</exception>
         /// <exception cref="JsonException">Ошибки сериализации или десериализации Json-объектов</exception>
         /// <exception cref="InvalidDataException">Ошибка формата принятых данных </exception>
         /// <exception cref="TimeoutException"></exception>
-        public static HttpChannelResponse<string> PostAndReceiveText<TResponseJsonObject>(this HttpClient client, string query,
+        public static HttpResponse<string> PostAndReceiveText<TResponseJsonObject>(this HttpClient client, string query,
             object jsonSerializeableContent) => client.SendAndReceiveText(HttpClientRequest.CreateJsonPost(query, jsonSerializeableContent));
 
 
@@ -95,11 +95,11 @@ namespace TinyClient
         /// <exception cref="JsonException">Ошибки сериализации или десериализации Json-объектов</exception>
         /// <exception cref="InvalidDataException">Ошибка формата принятых данных </exception>
         /// <exception cref="TimeoutException"></exception>
-        public static HttpChannelResponse<string> SendAndReceiveText(this HttpClient client, HttpClientRequest request)
+        public static HttpResponse<string> SendAndReceiveText(this HttpClient client, HttpClientRequest request)
         {
             var response = client.Send(request);
 
-            var stringResponse = response as HttpChannelResponse<String>;
+            var stringResponse = response as HttpResponse<String>;
             if (stringResponse == null)
                 throw new InvalidDataException("Unexpected response format");
             return stringResponse;

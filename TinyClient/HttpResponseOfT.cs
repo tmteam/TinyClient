@@ -5,11 +5,11 @@ using TinyClient.Response;
 
 namespace TinyClient
 {
-    public class HttpChannelResponse<TContent> : IHttpResponse
+    public class HttpResponse<TContent> : IHttpResponse
     {
         private readonly ResponseInfo _responseInfo;
 
-        public HttpChannelResponse(ResponseInfo responseInfo, TContent content)
+        public HttpResponse(ResponseInfo responseInfo, TContent content)
         {
             _responseInfo = responseInfo;
             Content = content;

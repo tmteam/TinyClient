@@ -38,11 +38,11 @@ namespace TinyClient.Response
             if(subresponses.Count!= _subresponseDeserializers.Length)
                 throw new InvalidDataException($"Actual and expected items count are not equal. Actual: {subresponses.Count}, expected: {_subresponseDeserializers.Length}");
 
-            return new HttpChannelResponse<IHttpResponse[]>(responseInfo, subresponses.ToArray());
+            return new HttpResponse<IHttpResponse[]>(responseInfo, subresponses.ToArray());
         }
 
         /// <exception cref="InvalidDataException"></exception>
-        private HttpChannelResponse<string> ParseNextSubresponseFrom(PeekableStreamReader reader)
+        private HttpResponse<string> ParseNextSubresponseFrom(PeekableStreamReader reader)
         {
             var currentLine = reader.ReadFirstNonEmptyLine();
             if (currentLine != BatchParseHelper.GetOpenBoundaryString(_boundary))
@@ -61,7 +61,7 @@ namespace TinyClient.Response
 
             var content = BatchParseHelper.ReadUntilBoundaryOrThrow(reader, _boundary);
 
-            return new HttpChannelResponse<string>(
+            return new HttpResponse<string>(
                 new ResponseInfo((HttpStatusCode) resultCode),
                 content);
         }

@@ -29,7 +29,7 @@ namespace TinyClient.Tests
             var typedDeserializer = DeserializeAnswer(
                 new[] { new TextResponseDeserialaizer() }, boundary, answerContent);
             Assert.AreEqual(1, typedDeserializer.Content.Length);
-            Assert.AreEqual(1, typedDeserializer.Content.OfType<HttpChannelResponse<string>>().Count());
+            Assert.AreEqual(1, typedDeserializer.Content.OfType<HttpResponse<string>>().Count());
         }
         [Test]
         public void SingleAnswer_closeBoundaryIsWrong_DeserializeThrows()
@@ -93,7 +93,7 @@ namespace TinyClient.Tests
 
             var response =
                 DeserializeAnswer(new[] { new TextResponseDeserialaizer() }, boundary, answerContent).Content[0] as
-                    HttpChannelResponse<string>;
+                    HttpResponse<string>;
 
             Assert.AreEqual(204, (int) response.StatusCode);
         }
@@ -120,7 +120,7 @@ namespace TinyClient.Tests
 
             var response =
                 DeserializeAnswer(new[] { new TextResponseDeserialaizer()}, boundary, answerContent).Content[0] as
-                    HttpChannelResponse<string>;
+                    HttpResponse<string>;
 
             Assert.AreEqual(data, response.Content);
         }
@@ -149,7 +149,7 @@ namespace TinyClient.Tests
                     },
                     boundary,
                     answerContent).Content
-                .OfType<HttpChannelResponse<string>>()
+                .OfType<HttpResponse<string>>()
                 .ToArray();
 
             Assert.AreEqual(2, responses.Length);
@@ -189,7 +189,7 @@ namespace TinyClient.Tests
                         },
                         boundary,
                         answerContent).Content
-                    .OfType<HttpChannelResponse<string>>()
+                    .OfType<HttpResponse<string>>()
                     .ToArray();
 
             Assert.AreEqual(data1, responses[0].Content);
@@ -291,13 +291,13 @@ namespace TinyClient.Tests
                 new TextResponseDeserialaizer(),
             }, boundary, answerContent);
             Assert.AreEqual(3, typedDeserializer.Content.Length);
-            Assert.AreEqual(3, typedDeserializer.Content.OfType<HttpChannelResponse<string>>().Count());
+            Assert.AreEqual(3, typedDeserializer.Content.OfType<HttpResponse<string>>().Count());
         }
 
         private ResponseInfo FakeInfo =>
             new ResponseInfo(FakeUri, new KeyValuePair<string, string>[0], HttpStatusCode.OK);
 
-        private HttpChannelResponse<IHttpResponse[]> DeserializeAnswer(IResponseDeserializer[] deserializers,
+        private HttpResponse<IHttpResponse[]> DeserializeAnswer(IResponseDeserializer[] deserializers,
             string boundary, string answerContent)
         {
             var deserializer = new MultipartRequestDeserializer(boundary, deserializers);
@@ -306,9 +306,9 @@ namespace TinyClient.Tests
             var deserialized = deserializer.Deserialize(FakeInfo, stream);
 
             Assert.IsNotNull(deserialized);
-            Assert.IsInstanceOf<HttpChannelResponse<IHttpResponse[]>>(deserialized);
+            Assert.IsInstanceOf<HttpResponse<IHttpResponse[]>>(deserialized);
 
-            return deserialized as HttpChannelResponse<IHttpResponse[]>;
+            return deserialized as HttpResponse<IHttpResponse[]>;
         }
 
         private static MemoryStream AsStream(string answerContent)

@@ -8,7 +8,7 @@ namespace TinyClient.Response
         {
             using (var reader = new StreamReader(dataStream))
             {
-                return new HttpChannelResponse<string>(responseInfo, reader.ReadToEnd());
+                return new HttpResponse<string>(responseInfo, reader.ReadToEnd());
             }
         }
     }

@@ -42,15 +42,11 @@ namespace TinyClient
         
         private readonly Dictionary<string, string> headers = new Dictionary<string, string>();
         private readonly Dictionary<string, string> queryParams = new Dictionary<string, string>();
-        private readonly string subQuery;
 
         public HttpClientRequest(HttpMethod method, string subQuery)
         {
             Method = method;
-            this.subQuery = subQuery;
-            var builder = new UriBuilder();
-            builder.Query = subQuery;
-            this.Query = builder.Uri;
+            this.Query = subQuery;
             Content = null;
             Deserializer = new AutoResponseDeserializer();
         }
@@ -58,7 +54,7 @@ namespace TinyClient
         public IContent Content { get; private set; }
         public IResponseDeserializer Deserializer { get; private set; }
         public KeepAliveMode KeepAlive { get; private set; } = KeepAliveMode.UpToClient;
-        public Uri Query { get; private set; }
+        public string Query { get; private set; }
         public KeyValuePair<string, string>[] CustomHeaders => headers.ToArray();
         public TimeSpan? Timeout { get; private set; }
 
@@ -88,20 +84,18 @@ namespace TinyClient
             return this;
         }
 
-        public HttpClientRequest SetDeserializer(IResponseDeserializer specificDeserializer)
-        {
+        public HttpClientRequest SetDeserializer(IResponseDeserializer specificDeserializer) {
             this.Deserializer = specificDeserializer;
             return this;
         }
 
 
-        public HttpClientRequest SetContent(IContent content)
-        {
+        public HttpClientRequest SetContent(IContent content) {
             this.Content = content;
             return this;
         }
-        public HttpClientRequest SetTimeout(TimeSpan timeout)
-        {
+
+        public HttpClientRequest SetTimeout(TimeSpan timeout) {
             this.Timeout = timeout;
             return this;
         }
@@ -137,10 +131,16 @@ namespace TinyClient
             var convertible = paramValue as IConvertible;
             return convertible?.ToString(CultureInfo.InvariantCulture) ?? paramValue.ToString();
         }
+        public string QueryAbsolutePath 
+        {
+            get { throw new InvalidOperationException(); }
+        }
 
         public Uri GetUriFor(string host) {
-            return GetUriFor(new Uri(host));
+          
+            return UriHelper.BuildUri(host, Query, queryParams);
         }
+        /*
         public Uri GetUriFor(Uri host)
         {
             var uriBuilder = new UriBuilder(host);
@@ -159,8 +159,7 @@ namespace TinyClient
             }
 
             return uriBuilder.Uri;
-        }
-
+        }*/
     }
 
     public enum KeepAliveMode

@@ -36,7 +36,6 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -45,9 +44,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="HttpClient.cs" />
-    <Compile Include="HttpClientBuilder.cs" />
+    <Compile Include="Client\HttpClientBuilder.cs" />
     <Compile Include="HttpClientExtensions.cs" />
-    <Compile Include="Client\HttpSender.cs" />
     <Compile Include="Client\AsyncRequest.cs" />
     <Compile Include="Client\HttpSenderAsync.cs" />
     <Compile Include="Client\IHttpSender.cs" />
@@ -70,7 +68,7 @@
     <Compile Include="Response\MultipartRequestDeserializer.cs" />
     <Compile Include="Response\PeekableStreamReader.cs" />
     <Compile Include="Response\ResponseInfo.cs" />
-    <Compile Include="HttpChannelResponse.cs" />
+    <Compile Include="HttpResponseOfT.cs" />
     <Compile Include="Response\TextResponseDeserialaizer.cs" />
   </ItemGroup>
   <ItemGroup>

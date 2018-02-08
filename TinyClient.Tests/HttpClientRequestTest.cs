@@ -5,7 +5,7 @@ using NUnit.Framework;
 namespace TinyClient.Tests
 {
     [TestFixture]
-    public class HttpChannelRequestTest
+    public class HttpClientRequestTest
     {
         [Test]
         public void GetUriFor_querySpecified_UrlIsCorrect()
@@ -123,7 +123,53 @@ namespace TinyClient.Tests
                 actual: uri.AbsoluteUri);
         }
 
-       
+
+        [TestCase("ya.ru", "", "http://ya.ru/")]
+        [TestCase("http://ya.ru", "", "http://ya.ru/")]
+        [TestCase("https://ya.ru", "", "https://ya.ru/")]
+        [TestCase("https://ya.ru/", "", "https://ya.ru/")]
+        [TestCase("localhost", "", "http://localhost/")]
+        [TestCase("localhost:9090", "", "http://localhost:9090/")]
+        [TestCase("http://localhost:9090", "", "http://localhost:9090/")]
+        [TestCase("http://localhost:9090/", "", "http://localhost:9090/")]
+        [TestCase("localhost:9090/", "", "http://localhost:9090/")]
+
+        [TestCase("ya.ru", "search", "http://ya.ru/search")]
+        [TestCase("http://ya.ru", "search", "http://ya.ru/search")]
+        [TestCase("https://ya.ru", "search", "https://ya.ru/search")]
+        [TestCase("https://ya.ru/", "search", "https://ya.ru/search")]
+        [TestCase("localhost", "search", "http://localhost/search")]
+        [TestCase("localhost:9090", "search", "http://localhost:9090/search")]
+        [TestCase("http://localhost:9090", "search", "http://localhost:9090/search")]
+        [TestCase("http://localhost:9090/", "search", "http://localhost:9090/search")]
+        [TestCase("localhost:9090/", "search", "http://localhost:9090/search")]
+
+        [TestCase("ya.ru", "search/", "http://ya.ru/search/")]
+        [TestCase("http://ya.ru", "search/", "http://ya.ru/search/")]
+        [TestCase("https://ya.ru", "search/", "https://ya.ru/search/")]
+        [TestCase("https://ya.ru/", "search/", "https://ya.ru/search/")]
+        [TestCase("localhost", "search/", "http://localhost/search/")]
+        [TestCase("localhost:9090", "search/", "http://localhost:9090/search/")]
+        [TestCase("http://localhost:9090", "search/", "http://localhost:9090/search/")]
+        [TestCase("http://localhost:9090/", "search/", "http://localhost:9090/search/")]
+        [TestCase("localhost:9090/", "search/", "http://localhost:9090/search/")]
+
+        [TestCase("ya.ru", "search?a=b%20c&d=e", "http://ya.ru/search?a=b%20c&d=e")]
+        [TestCase("http://ya.ru", "search?a=b%20c&d=e", "http://ya.ru/search?a=b%20c&d=e")]
+        [TestCase("https://ya.ru", "search?a=b%20c&d=e", "https://ya.ru/search?a=b%20c&d=e")]
+        [TestCase("https://ya.ru/", "search?a=b%20c&d=e", "https://ya.ru/search?a=b%20c&d=e")]
+        [TestCase("localhost", "search?a=b%20c&d=e", "http://localhost/search?a=b%20c&d=e")]
+        [TestCase("localhost:9090", "search?a=b%20c&d=e", "http://localhost:9090/search?a=b%20c&d=e")]
+        [TestCase("http://localhost:9090", "search?a=b%20c&d=e", "http://localhost:9090/search?a=b%20c&d=e")]
+        [TestCase("http://localhost:9090/", "search?a=b%20c&d=e", "http://localhost:9090/search?a=b%20c&d=e")]
+        [TestCase("localhost:9090/", "search?a=b%20c&d=e", "http://localhost:9090/search?a=b%20c&d=e")]
+        public void GetUriFor_noQueryParams(string host, string queryParams, string expected)
+        {
+            var uri = HttpClientRequest
+                .CreateGet(queryParams)
+                .GetUriFor(host);
+            Assert.AreEqual(expected, uri.AbsoluteUri);
+        }
 
         [Test]
         public void SetMethodName_BuildFor_MethodNameEquals()

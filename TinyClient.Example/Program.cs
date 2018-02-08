@@ -16,8 +16,14 @@ namespace HttpClientChannel.TestApplication
     {
         static void Main(string[] args)
         {
-            Dictionary<string, string> test = new Dictionary<string, string>();
-            test["lala"] = "uu";
+            var c = new HttpClient("http://localhost:61470");
+            var req = HttpClientRequest
+                .Create(HttpMethod.Get, "api/test")
+                .AddUriParam("name", "vasa")
+                .AddUriParam("age", 42);
+            var resp = c.Send(req);
+
+
             var client = new HttpClient("http://myHost.io");
             //Simple request:
             var received = client.PostAndReceiveJson<MyAnswerVm>("/getMyAnswer", new MyRequestVM { Name = "Bender"});
@@ -48,7 +54,7 @@ namespace HttpClientChannel.TestApplication
                 .SetContent(new JsonContent(new MyRequestVM {Name = "Cartman"}));
 
             var response = customClient.Send(customRequest);
-            var textResponse = response as HttpChannelResponse<string>;
+            var textResponse = response as HttpResponse<string>;
             Console.WriteLine(textResponse.Content);
         }
     }
