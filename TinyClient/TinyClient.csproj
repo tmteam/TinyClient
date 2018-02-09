@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DeflateEncoder.cs" />
+    <Compile Include="Encoders.cs" />
     <Compile Include="HttpClient.cs" />
     <Compile Include="Client\HttpClientBuilder.cs" />
     <Compile Include="HttpClientExtensions.cs" />
@@ -56,6 +57,7 @@
     <Compile Include="Helpers\JsonHelper.cs" />
     <Compile Include="HttpResponseExtensions.cs" />
     <Compile Include="IContentEncoder.cs" />
+    <Compile Include="IHttpClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="HttpClientRequest.cs" />
     <Compile Include="HttpClientRequestExtensions.cs" />

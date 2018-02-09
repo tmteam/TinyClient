@@ -6,7 +6,7 @@ using TinyClient.Client;
 
 namespace TinyClient
 {
-    public class HttpClient
+    public class HttpClient : IHttpClient
     {
         private readonly string _host;
         private readonly bool _keepAlive;
