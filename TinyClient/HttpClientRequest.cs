@@ -123,7 +123,7 @@ namespace TinyClient
             if (paramValue == null)
                 throw new ArgumentNullException(nameof(paramValue));
 
-            queryParams[paramName] = SerializeUriParam(paramValue);
+            queryParams[paramName] = UriHelper.SerializeUriParam(paramValue);
             return this;
         }
 
@@ -138,25 +138,28 @@ namespace TinyClient
             Content.WriteTo(stream, host);
             return memoryStream.ToArray();
         }
-        private static string SerializeUriParam(object paramValue)
+
+        public HttpClientRequest GetCopyFor(string subQuery)
         {
-            var type = paramValue.GetType();
-            // Для енумов отдельная обработка, т.к. стандартный метод форматирования не делает camelCase.
-            // Форматируем средствами Json.Net.
-            if (type.IsEnum)
-                return JsonHelper.Serialize(paramValue);
-
-            // Для даты/времени также отдельная обработка, т.к. стандартный метод форматирования двет некорректный
-            // результат (не сериализуется часовой пояс).
-
-            if (type == typeof(DateTime))
+            var copy = new HttpClientRequest(this.Method, subQuery)
             {
-                var dt = (DateTime)paramValue;
-                return dt.ToString(JsonHelper.DateTimeFormatString);
+                Content = this.Content,
+                Deserializer = this.Deserializer,
+                Encoder = this.Encoder,
+                KeepAlive = this.KeepAlive,
+                Timeout = this.Timeout,
+            };
+            foreach (var header in headers)
+            {
+                copy.AddCustomHeader(header.Key, header.Value);
             }
 
-            var convertible = paramValue as IConvertible;
-            return convertible?.ToString(CultureInfo.InvariantCulture) ?? paramValue.ToString();
+            foreach (var queryParam in queryParams)
+            {
+                copy.AddUriParam(queryParam.Key, queryParam.Value);
+            }
+
+            return copy;
         }
         
     }

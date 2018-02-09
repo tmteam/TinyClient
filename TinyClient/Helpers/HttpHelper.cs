@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -9,6 +10,26 @@ namespace TinyClient.Helpers
 {
     public static class UriHelper
     {
+        public static string SerializeUriParam(object paramValue)
+        {
+            var type = paramValue.GetType();
+            // Для енумов отдельная обработка, т.к. стандартный метод форматирования не делает camelCase.
+            // Форматируем средствами Json.Net.
+            if (type.IsEnum)
+                return JsonHelper.Serialize(paramValue);
+
+            // Для даты/времени также отдельная обработка, т.к. стандартный метод форматирования двет некорректный
+            // результат (не сериализуется часовой пояс).
+
+            if (type == typeof(DateTime))
+            {
+                var dt = (DateTime)paramValue;
+                return dt.ToString(JsonHelper.DateTimeFormatString);
+            }
+
+            var convertible = paramValue as IConvertible;
+            return convertible?.ToString(CultureInfo.InvariantCulture) ?? paramValue.ToString();
+        }
         public static string CreateQuery(IEnumerable<KeyValuePair<string, string>> uriParams)
         {
             return String.Join("&",
