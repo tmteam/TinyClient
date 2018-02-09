@@ -59,7 +59,7 @@ namespace TinyClient.Client
             byte[] data;
             var webRequest = CreateRequest(request, out data);
 
-            var asyncRequest = new AsyncRequest(webRequest, data, request.Encoder);
+            var asyncRequest = new AsyncRequest(webRequest, data);
             return asyncRequest.Send();
          
         }
@@ -76,10 +76,9 @@ namespace TinyClient.Client
             data = null;
             if (request.Content != null)
             {
-                data = request.Content.GetDataFor(uri);
+                data = request.GetData(uri);
                 webRequest.ContentLength = data.Length;
                 webRequest.ContentType = request.Content.ContentType;
-                
             }
 
             if (request.KeepAlive != KeepAliveMode.UpToClient)

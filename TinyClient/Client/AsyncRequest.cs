@@ -10,13 +10,11 @@ namespace TinyClient.Client
     {
         private readonly WebRequest _request;
         private readonly byte[] _dataOrNull;
-        private readonly IContentEncoder _encoderOrNull;
         private TaskCompletionSource<HttpWebResponse> _completionSource;
-        public AsyncRequest(WebRequest request, byte[] dataOrNull, IContentEncoder encoderOrNull)
+        public AsyncRequest(WebRequest request, byte[] dataOrNull)
         {
             _request = request;
             _dataOrNull = dataOrNull;
-            _encoderOrNull = encoderOrNull;
         }
       
 
@@ -59,9 +57,6 @@ namespace TinyClient.Client
                 return;
             }
             var stream = task.Result;
-            if (_encoderOrNull != null)
-                stream = _encoderOrNull.GetEncodingStream(stream);
-
             stream.Write(_dataOrNull);
             ReceiveAsync();
         }

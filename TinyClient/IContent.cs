@@ -1,10 +1,11 @@
 ﻿using System;
+using System.IO;
 
 namespace TinyClient
 {
     public interface IContent
     {
         string ContentType { get; }
-        byte[] GetDataFor(Uri host);
+        void WriteTo(Stream stream, Uri host);
     }
 }

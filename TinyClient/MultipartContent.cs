@@ -19,9 +19,8 @@ namespace TinyClient
         }
 
         public string ContentType => HttpMediaTypes.Mixed;
-        public byte[] GetDataFor(Uri host)
+        public void WriteTo(Stream stream, Uri host)
         {
-            var stream = new MemoryStream();
             var sb = new StringBuilder();
             foreach (var request in SubRequests)
             {
@@ -34,11 +33,9 @@ namespace TinyClient
                 sb.AppendLine();
 
                 stream.Write(Encoding.UTF8.GetBytes(sb.ToString()));
-
-                stream.Write(request.Content.GetDataFor(host));
+                request.Content.WriteTo(stream, host);
             }
             stream.Write(Encoding.UTF8.GetBytes("\r\n--" + _boundary));
-            return stream.ToArray();
         }
     }
 }

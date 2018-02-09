@@ -19,10 +19,8 @@ namespace TinyClient.Tests
                 Age = 42
             };
             var jsonRequest = new JsonContent(content);
-            var request = jsonRequest.GetDataFor(FakeUri);
-
             var stream = new MemoryStream();
-            stream.Write(request);
+            jsonRequest.WriteTo(stream, host: FakeUri);
             stream.Position = 0;
 
             var reader = new StreamReader(stream);

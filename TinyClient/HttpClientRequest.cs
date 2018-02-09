@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Web;
 using TinyClient.Helpers;
@@ -104,8 +105,7 @@ namespace TinyClient
             this.Deserializer = specificDeserializer;
             return this;
         }
-
-
+        
         public HttpClientRequest SetContent(IContent content) {
             this.Content = content;
             return this;
@@ -127,6 +127,17 @@ namespace TinyClient
             return this;
         }
 
+        public byte[] GetData(Uri host)
+        {
+            if(Content==null)
+                return new byte[0];
+            var memoryStream = new MemoryStream();
+            Stream stream = memoryStream;
+            if (Encoder != null)
+                stream = Encoder.GetEncodingStream(stream);
+            Content.WriteTo(stream, host);
+            return memoryStream.ToArray();
+        }
         private static string SerializeUriParam(object paramValue)
         {
             var type = paramValue.GetType();

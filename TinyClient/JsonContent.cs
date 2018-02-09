@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Text;
 using TinyClient.Helpers;
 
@@ -31,11 +32,14 @@ namespace TinyClient
         }
 
         public string ContentType => HttpMediaTypes.Json;
-        public byte[] GetDataFor(Uri host)
+        public void WriteTo(Stream stream, Uri host)
         {
             if (string.IsNullOrWhiteSpace(_content))
-                return new byte[0];
-            return Encoding.UTF8.GetBytes(_content);
+                return;
+
+            var writer = new StreamWriter(stream, Encoding.UTF8);
+            writer.Write(_content);
+            writer.Flush();
         }
     }
 }
