@@ -57,7 +57,7 @@ namespace TinyClient
         public string Query { get; private set; }
         public KeyValuePair<string, string>[] CustomHeaders => headers.ToArray();
         public TimeSpan? Timeout { get; private set; }
-
+        public IContentEncoder Encoder { get; private set; }
         /// <summary>
         /// Full query path, includes Query and UriParams (without host)
         /// Starts with '/'
@@ -77,6 +77,13 @@ namespace TinyClient
             return this;
         }
 
+        public HttpClientRequest AddContentEncoder(IContentEncoder encoder)
+        {
+            if(Encoder!=null)
+                throw new InvalidOperationException("You can set encoder only once");
+            Encoder = encoder;
+            return this;
+        }
         /// <summary>
         /// Adds custom request header.
         /// </summary>

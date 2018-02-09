@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using TinyClient.Client;
@@ -10,14 +11,13 @@ namespace TinyClient
         private readonly string _host;
         private readonly bool _keepAlive;
         private readonly IHttpSender _sender;
-
         public static HttpClientBuilder Create(string host) => new HttpClientBuilder(host);
 
         public HttpClient(HttpClientBuilder builder)
         {
             _host = builder.Host;
             _keepAlive = builder.KeepAlive;
-            _sender = builder.Sender?? new HttpSenderAsync(_host);
+            _sender = builder.Sender?? new HttpSenderAsync(_host, builder.Decoders);
             Timeout = builder.Timeout;
             _requestPreprocessor = builder.RequestMiddleware;
             _responsePreprocessor = builder.ResponseMiddleware;
@@ -27,7 +27,7 @@ namespace TinyClient
         {
             _host = host;
             _keepAlive = keepAlive;
-            _sender = new HttpSenderAsync(host);
+            _sender = new HttpSenderAsync(host, new IContentEncoder[0]);
         }
 
         public TimeSpan? Timeout { get; set; } = TimeSpan.FromSeconds(10);
@@ -51,11 +51,9 @@ namespace TinyClient
 
             if (_requestPreprocessor != null)
                 request = _requestPreprocessor(request);
-
-
-
+            
             var response = _sender.Send(request );
-
+           
             if (_responsePreprocessor != null)
                 response = _responsePreprocessor(response);
 

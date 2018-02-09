@@ -11,10 +11,16 @@ namespace TinyClient.Client
     public class HttpSenderAsync: IHttpSender
     {
         private readonly string _host;
+        private readonly Dictionary<string, IContentEncoder> _decoders;
 
-        public HttpSenderAsync(string host)
+        public HttpSenderAsync(string host, IEnumerable<IContentEncoder> decoders)
         {
             _host = host;
+            _decoders = new Dictionary<string, IContentEncoder>();
+            foreach (var contentEncoder in decoders)
+            {
+                _decoders.Add(contentEncoder.EncodingType, contentEncoder);
+            }
         }
 
         /// <exception cref="WebException"></exception>
@@ -53,7 +59,7 @@ namespace TinyClient.Client
             byte[] data;
             var webRequest = CreateRequest(request, out data);
 
-            var asyncRequest = new AsyncRequest(webRequest, data);
+            var asyncRequest = new AsyncRequest(webRequest, data, request.Encoder);
             return asyncRequest.Send();
          
         }
@@ -73,6 +79,7 @@ namespace TinyClient.Client
                 data = request.Content.GetDataFor(uri);
                 webRequest.ContentLength = data.Length;
                 webRequest.ContentType = request.Content.ContentType;
+                
             }
 
             if (request.KeepAlive != KeepAliveMode.UpToClient)
@@ -85,7 +92,7 @@ namespace TinyClient.Client
 
             return webRequest;
         }
-        private static IHttpResponse ToResponse(HttpClientRequest request, HttpWebResponse webResponse)
+        private IHttpResponse ToResponse(HttpClientRequest request, HttpWebResponse webResponse)
         {
             var deserializer = request.Deserializer;
 
@@ -94,7 +101,18 @@ namespace TinyClient.Client
                 responseHeaders.Add(key, webResponse.Headers.Get(key));
             var responseInfo = new ResponseInfo(webResponse.ResponseUri, responseHeaders.ToArray(), webResponse.StatusCode);
 
-            var deserialized = deserializer.Deserialize(responseInfo, webResponse.GetResponseStream());
+            var stream = webResponse.GetResponseStream();
+
+            if (responseHeaders.ContainsKey("Content-Encoding"))
+            {
+                var encodingType = responseHeaders["Content-Encoding"];
+                if (_decoders.ContainsKey(encodingType))
+                {
+                    stream = _decoders[encodingType].GetDecodingStream(stream);
+                }
+            }
+
+            var deserialized = deserializer.Deserialize(responseInfo,stream);
             return deserialized;
         }
 

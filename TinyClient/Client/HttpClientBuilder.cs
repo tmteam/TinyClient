@@ -1,20 +1,31 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace TinyClient.Client
 {
   
     public class HttpClientBuilder
     {
+        private List<IContentEncoder> _decoders = new List<IContentEncoder>();
+
         public string Host { get; private set; }
         public bool KeepAlive { get; private set; } = true;
         public IHttpSender Sender { get; private set; }
         public Func<HttpClientRequest, HttpClientRequest> RequestMiddleware { get; private set; }= null;
         public Func<IHttpResponse, IHttpResponse> ResponseMiddleware { get; private set; } = null;
         public TimeSpan? Timeout { get; private set; } = TimeSpan.FromSeconds(10);
+        public IEnumerable<IContentEncoder> Decoders => _decoders;
 
         public HttpClientBuilder(string host)
         {
             Host = host;
+        }
+
+
+        public HttpClientBuilder WithCustomDecoder(IContentEncoder decoder)
+        {
+            _decoders.Add(decoder);
+            return this;
         }
         public HttpClientBuilder WithCustomSender(IHttpSender sender)
         {

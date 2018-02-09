@@ -10,11 +10,13 @@ namespace TinyClient.Client
     {
         private readonly WebRequest _request;
         private readonly byte[] _dataOrNull;
+        private readonly IContentEncoder _encoderOrNull;
         private TaskCompletionSource<HttpWebResponse> _completionSource;
-        public AsyncRequest(WebRequest request, byte[] dataOrNull)
+        public AsyncRequest(WebRequest request, byte[] dataOrNull, IContentEncoder encoderOrNull)
         {
             _request = request;
             _dataOrNull = dataOrNull;
+            _encoderOrNull = encoderOrNull;
         }
       
 
@@ -38,15 +40,14 @@ namespace TinyClient.Client
                 .FromAsync(_request.BeginGetRequestStream, _request.EndGetRequestStream, null);
             getRequestTask.ContinueWith(HandleRequestStream);
         }
-
-     
-
+        
         private void ReceiveAsync()
         {
             var getResponseTask = Task.Factory
                 .FromAsync(_request.BeginGetResponse, _request.EndGetResponse, null);
             getResponseTask.ContinueWith(HandleResponse);
         }
+
         private void HandleRequestStream(Task<Stream> task) {
             if (task.IsCanceled) {
                 _completionSource.TrySetCanceled();
@@ -58,10 +59,13 @@ namespace TinyClient.Client
                 return;
             }
             var stream = task.Result;
-            stream.Write(_dataOrNull);
+            if (_encoderOrNull != null)
+                stream = _encoderOrNull.GetEncodingStream(stream);
 
+            stream.Write(_dataOrNull);
             ReceiveAsync();
         }
+
         private void HandleResponse(Task<WebResponse> task)
         {
             if (task.IsCanceled) {
