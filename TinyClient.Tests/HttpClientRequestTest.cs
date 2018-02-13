@@ -192,7 +192,5 @@ namespace TinyClient.Tests
             Assert.IsNotNull(header);
             Assert.AreEqual(value, header.Value);
         }
-
-        private Uri FakeUri => new UriBuilder { Query = "lalal" }.Uri;
     }
 }

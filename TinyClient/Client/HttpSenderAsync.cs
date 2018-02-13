@@ -70,9 +70,8 @@ namespace TinyClient.Client
             webRequest.Method = request.Method.Name;
 
             foreach (var header in request.CustomHeaders)
-            {
                 webRequest.Headers.Add(header.Key, header.Value);
-            }
+
             data = null;
             if (request.Content != null)
             {
@@ -83,11 +82,6 @@ namespace TinyClient.Client
 
             if (request.KeepAlive != KeepAliveMode.UpToClient)
                 webRequest.KeepAlive = request.KeepAlive == KeepAliveMode.True;
-
-            if (request.KeepAlive == KeepAliveMode.True)
-                webRequest.KeepAlive = true;
-            else if (request.KeepAlive == KeepAliveMode.False)
-                webRequest.KeepAlive = false;
 
             return webRequest;
         }

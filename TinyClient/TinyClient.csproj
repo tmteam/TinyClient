@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="DeflateEncoder.cs" />
     <Compile Include="Encoders.cs" />
+    <Compile Include="Helpers\UriHelper.cs" />
     <Compile Include="HttpClient.cs" />
     <Compile Include="Client\HttpClientBuilder.cs" />
     <Compile Include="HttpClientExtensions.cs" />

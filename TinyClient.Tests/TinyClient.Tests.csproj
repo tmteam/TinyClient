@@ -67,6 +67,7 @@
     <Compile Include="MultipartRequestDeserializerTest.cs" />
     <Compile Include="PeekableStreamReaderTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UriHelperTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
