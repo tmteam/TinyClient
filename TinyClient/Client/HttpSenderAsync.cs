@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using TinyClient.Helpers;
 using TinyClient.Response;
 
 namespace TinyClient.Client
@@ -12,7 +13,7 @@ namespace TinyClient.Client
     {
         private readonly string _host;
         private readonly Dictionary<string, IContentEncoder> _decoders;
-
+        private readonly Dictionary<string, Action<string, HttpWebRequest>> _specialHeadersMap;
         public HttpSenderAsync(string host, IEnumerable<IContentEncoder> decoders)
         {
             _host = host;
@@ -21,6 +22,11 @@ namespace TinyClient.Client
             {
                 _decoders.Add(contentEncoder.EncodingType, contentEncoder);
             }
+
+            _specialHeadersMap = new Dictionary<string, Action<string, HttpWebRequest>>
+            {
+                { HttpHelper.UserAgentHeader,(value, webRequest)=> webRequest.UserAgent = value}
+            };
         }
 
         /// <exception cref="WebException"></exception>
@@ -68,9 +74,14 @@ namespace TinyClient.Client
             var uri = request.GetUriFor(_host);
             var webRequest = (HttpWebRequest)WebRequest.Create(uri);
             webRequest.Method = request.Method.Name;
-
+            
             foreach (var header in request.CustomHeaders)
-                webRequest.Headers.Add(header.Key, header.Value);
+            {
+                if (_specialHeadersMap.ContainsKey(header.Key))
+                    _specialHeadersMap[header.Key](header.Value, webRequest);
+                else
+                    webRequest.Headers.Add(header.Key, header.Value);
+            }
 
             data = null;
             if (request.Content != null)
