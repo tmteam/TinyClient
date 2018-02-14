@@ -30,13 +30,16 @@ namespace TinyClient
                 sb.AppendLine();
                 sb.AppendLine($"{request.Method.Name} {request.QueryAbsolutePath} {HttpHelper.Http11VersionCaption}");
                 sb.AppendLine($"Host: {host.Authority}");
-                sb.AppendLine();
                 stream.WriteUtf8(sb.ToString());
 
                 if (request.Content != null)
                 {
                     stream.WriteUtf8($"{HttpHelper.ContentTypeHeader}: {request.Content.ContentType}\r\n\r\n");
                     request.Content.WriteTo(stream, host);
+                }
+                else
+                {
+                    stream.WriteUtf8("\r\n");
                 }
                 stream.WriteUtf8("\r\n");
             }
