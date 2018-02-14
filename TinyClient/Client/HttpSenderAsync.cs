@@ -94,6 +94,7 @@ namespace TinyClient.Client
             if (request.KeepAlive != KeepAliveMode.UpToClient)
                 webRequest.KeepAlive = request.KeepAlive == KeepAliveMode.True;
 
+            webRequest.ServicePoint.Expect100Continue = false;
             return webRequest;
         }
         private IHttpResponse ToResponse(HttpClientRequest request, HttpWebResponse webResponse)
