@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Text;
 using NUnit.Framework;
+using TinyClient.Helpers;
 using TinyClient.Response;
 
 namespace TinyClient.Tests
@@ -37,7 +38,7 @@ namespace TinyClient.Tests
         [TestCase(" HTTP/1.1 200 some words", 200)]
         public void GetResultCodeOrThrow_StringIsCorrect_SpecifiedCodeFound(string str, int code)
         {
-            var actualCode = BatchParseHelper.GetResultCodeOrThrow(str);
+            var actualCode = BatchSerializeHelper.GetResultCodeOrThrow(str);
             Assert.AreEqual(code, actualCode);
         }
 
@@ -46,7 +47,7 @@ namespace TinyClient.Tests
         [TestCase("HTTP/1.1 some words 200")]
         public void GetResultCodeOrThrow_StringIsInvalid_Throws(string str)
         {
-            Assert.Throws<InvalidDataException>(()=> BatchParseHelper.GetResultCodeOrThrow(str));
+            Assert.Throws<InvalidDataException>(()=> BatchSerializeHelper.GetResultCodeOrThrow(str));
         }
 
         [TestCase("","")]
@@ -59,7 +60,7 @@ namespace TinyClient.Tests
         {
             string boundary = "theBoundary";
             var text = $"{beforeBoundary}\r\n--{boundary}\r\n{afterBoundary}";
-            var actual = BatchParseHelper.ReadUntilBoundaryOrThrow(GetReaderFor(text), boundary);
+            var actual = BatchSerializeHelper.ReadUntilBoundaryOrThrow(GetReaderFor(text), boundary);
             Assert.AreEqual(beforeBoundary, actual);
         }
         [Test]
@@ -68,7 +69,7 @@ namespace TinyClient.Tests
             string boundary = "theBoundary";
             string content = "before1\r\nbefore2";
             var text = $"{content}\r\n--{boundary}--\r\nsome string after";
-            var actual = BatchParseHelper.ReadUntilBoundaryOrThrow(GetReaderFor(text), boundary);
+            var actual = BatchSerializeHelper.ReadUntilBoundaryOrThrow(GetReaderFor(text), boundary);
             Assert.AreEqual(content, actual);
         }
 
@@ -78,7 +79,28 @@ namespace TinyClient.Tests
             string content = "before1\r\nbefore2";
 
             Assert.Throws<InvalidDataException>(
-                ()=> BatchParseHelper.ReadUntilBoundaryOrThrow(GetReaderFor(content),"someBoundary"));
+                ()=> BatchSerializeHelper.ReadUntilBoundaryOrThrow(GetReaderFor(content),"someBoundary"));
+        }
+
+        [TestCase(" multipart/mixed; boundary=\"myCustomBoundary\"", "myCustomBoundary")]
+        [TestCase("multipart/mixed;  boundary = \"myCustomBoundary\"", "myCustomBoundary")]
+        public void GetBoundaryStringOrThrow_SearchesForSpecifiedBoundary(string contentTypeString, string boundary)
+        {
+            var actual = BatchSerializeHelper.GetBoundaryStringOrThrow(contentTypeString);
+            Assert.AreEqual(boundary, actual);
+        }
+
+        [TestCase(" multipart/mAxed; boundary=\"myCustomBoundary\"")]
+        [TestCase("multipart/mixed;  = \"myCustomBoundary\"")]
+        [TestCase("multipart/mixed;  ")]
+        [TestCase(" boundary=\"myCustomBoundary\"")]
+        [TestCase("boundary=\"myCustomBoundary\"")]
+        [TestCase("multipart/mixed;")]
+
+
+        public void GetBoundaryStringOrThrow_ContentTypeStringIsInvalid_Throws(string contentTypeString)
+        {
+            Assert.Throws<InvalidDataException>(()=> BatchSerializeHelper.GetBoundaryStringOrThrow(contentTypeString));
         }
 
         private PeekableStreamReader GetReaderFor(string content)

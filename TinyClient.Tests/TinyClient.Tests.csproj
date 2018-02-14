@@ -64,6 +64,7 @@
     <Compile Include="BatchParseHelperTest.cs" />
     <Compile Include="JsonRequestTest.cs" />
     <Compile Include="HttpClientRequestTest.cs" />
+    <Compile Include="MultipartContentTest.cs" />
     <Compile Include="MultipartRequestDeserializerTest.cs" />
     <Compile Include="PeekableStreamReaderTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

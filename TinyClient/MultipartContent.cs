@@ -18,24 +18,29 @@ namespace TinyClient
             _boundary = boundary;
         }
 
-        public string ContentType => HttpMediaTypes.Mixed;
+        public string ContentType => HttpMediaTypes.Mixed+"; boundary="+_boundary;
         public void WriteTo(Stream stream, Uri host)
         {
-            var sb = new StringBuilder();
+            
             foreach (var request in SubRequests)
             {
-
-                sb.AppendLine(BatchParseHelper.GetOpenBoundaryString(_boundary));
+                var sb = new StringBuilder();
+                sb.AppendLine(BatchSerializeHelper.GetOpenBoundaryString(_boundary));
                 sb.AppendLine(HttpHelper.HttpRequestContentTypeHeaderString);
                 sb.AppendLine();
                 sb.AppendLine($"{request.Method.Name} {request.QueryAbsolutePath} {HttpHelper.Http11VersionCaption}");
-                sb.AppendLine($"Host: {host.Host}");
+                sb.AppendLine($"Host: {host.Authority}");
                 sb.AppendLine();
+                stream.WriteUtf8(sb.ToString());
 
-                stream.Write(Encoding.UTF8.GetBytes(sb.ToString()));
-                request.Content.WriteTo(stream, host);
+                if (request.Content != null)
+                {
+                    stream.WriteUtf8($"{HttpHelper.ContentTypeHeader}: {request.Content.ContentType}\r\n\r\n");
+                    request.Content.WriteTo(stream, host);
+                }
+                stream.WriteUtf8("\r\n");
             }
-            stream.Write(Encoding.UTF8.GetBytes("\r\n--" + _boundary));
+            stream.WriteUtf8(BatchSerializeHelper.GetCloseBoundaryString(_boundary));
         }
     }
 }

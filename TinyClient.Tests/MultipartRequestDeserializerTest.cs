@@ -42,8 +42,8 @@ namespace TinyClient.Tests
                                 "\r\n" +
                                 "--batch-1";
 
-            var deserializer = new MultipartRequestDeserializer(boundary, new[] { new TextResponseDeserialaizer()});
-            Assert.Throws<InvalidDataException>(()=>deserializer.Deserialize(FakeInfo, AsStream(answerContent)));
+            var deserializer = new MultipartRequestDeserializer(new[] { new TextResponseDeserialaizer()});
+            Assert.Throws<InvalidDataException>(()=>deserializer.Deserialize(GetFakeInfo(boundary), AsStream(answerContent)));
 
         }
 
@@ -57,8 +57,8 @@ namespace TinyClient.Tests
                                 "\r\n" +
                                 "someContent";
 
-            var deserializer = new MultipartRequestDeserializer(boundary, new[] { new TextResponseDeserialaizer() });
-            Assert.Throws<InvalidDataException>(() => deserializer.Deserialize(FakeInfo, AsStream(answerContent)));
+            var deserializer = new MultipartRequestDeserializer(new[] { new TextResponseDeserialaizer() });
+            Assert.Throws<InvalidDataException>(() => deserializer.Deserialize(GetFakeInfo(boundary), AsStream(answerContent)));
         }
 
         [Test]
@@ -72,10 +72,10 @@ namespace TinyClient.Tests
         [Test]
         public void AnswerIsEmpty_SingleDeserializer_Throws()
         {
-            var deserializer = new MultipartRequestDeserializer("someBoundary",
+            var deserializer = new MultipartRequestDeserializer(
                 new[] { new TextResponseDeserialaizer() });
 
-            Assert.Throws<InvalidDataException>(() => deserializer.Deserialize(FakeInfo, AsStream("")));
+            Assert.Throws<InvalidDataException>(() => deserializer.Deserialize(GetFakeInfo("boundary"), AsStream("")));
         }
 
 
@@ -209,15 +209,14 @@ namespace TinyClient.Tests
                                 "HTTP/1.1 204 No Content\r\n" +
                                 "\r\n" +"\r\n" +
                                 "--batch-1--";
-            var deserializer = new MultipartRequestDeserializer(boundary, new[]
+            var deserializer = new MultipartRequestDeserializer(new[]
             {
                 new TextResponseDeserialaizer(),
                 new TextResponseDeserialaizer(),
                 new TextResponseDeserialaizer()
             });
             var stream = AsStream(answerContent);
-
-            Assert.Throws<InvalidDataException>(() => deserializer.Deserialize(FakeInfo, stream));
+            Assert.Throws<InvalidDataException>(() => deserializer.Deserialize(GetFakeInfo(boundary), stream));
         }
 
         [Test]
@@ -238,10 +237,9 @@ namespace TinyClient.Tests
                                 "HTTP/1.1 204 No Content\r\n" +
                                 "\r\n" + "\r\n" +
                                 "--batch-1--";
-            var deserializer = new MultipartRequestDeserializer(boundary, 
-                new[] { new TextResponseDeserialaizer(), new TextResponseDeserialaizer() });
+            var deserializer = new MultipartRequestDeserializer(new[] { new TextResponseDeserialaizer(), new TextResponseDeserialaizer() });
 
-            Assert.Throws<InvalidDataException>(() => deserializer.Deserialize(FakeInfo, AsStream(answerContent)));
+            Assert.Throws<InvalidDataException>(() => deserializer.Deserialize(GetFakeInfo(boundary), AsStream(answerContent)));
         }
 
         [Test]
@@ -257,10 +255,10 @@ namespace TinyClient.Tests
                                 "Content-Type: application/http; msgtype = response\r\n" +
                                 "HTTP/1.1 204 No Content\r\n" +
                                 "\r\n" + "\r\n";
-            var deserializer = new MultipartRequestDeserializer(boundary,
+            var deserializer = new MultipartRequestDeserializer(
                 new[] { new TextResponseDeserialaizer(), new TextResponseDeserialaizer() });
 
-            Assert.Throws<InvalidDataException>(() => deserializer.Deserialize(FakeInfo, AsStream(answerContent)));
+            Assert.Throws<InvalidDataException>(() => deserializer.Deserialize(GetFakeInfo(boundary), AsStream(answerContent)));
         }
 
         [Test]
@@ -294,16 +292,23 @@ namespace TinyClient.Tests
             Assert.AreEqual(3, typedDeserializer.Content.OfType<HttpResponse<string>>().Count());
         }
 
-        private ResponseInfo FakeInfo =>
-            new ResponseInfo(FakeUri, new KeyValuePair<string, string>[0], HttpStatusCode.OK);
+
+        private ResponseInfo GetFakeInfo(string boundary)
+        {
+            return new ResponseInfo(FakeUri, new []
+            {
+                new KeyValuePair<string, string>("Content-Type",$"multipart/mixed; boundary=\"{boundary}\""), 
+            }, HttpStatusCode.OK);
+        }
+
 
         private HttpResponse<IHttpResponse[]> DeserializeAnswer(IResponseDeserializer[] deserializers,
             string boundary, string answerContent)
         {
-            var deserializer = new MultipartRequestDeserializer(boundary, deserializers);
+            var deserializer = new MultipartRequestDeserializer(deserializers);
             var stream = AsStream(answerContent);
 
-            var deserialized = deserializer.Deserialize(FakeInfo, stream);
+            var deserialized = deserializer.Deserialize(GetFakeInfo(boundary), stream);
 
             Assert.IsNotNull(deserialized);
             Assert.IsInstanceOf<HttpResponse<IHttpResponse[]>>(deserialized);

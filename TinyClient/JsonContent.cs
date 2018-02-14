@@ -31,7 +31,7 @@ namespace TinyClient
                 _content = JsonHelper.Serialize(content);
         }
 
-        public string ContentType => HttpMediaTypes.Json;
+        public string ContentType => HttpMediaTypes.JsonUtf8;
         public void WriteTo(Stream stream, Uri host)
         {
             if (string.IsNullOrWhiteSpace(_content))

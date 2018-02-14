@@ -1,11 +1,11 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using TinyClient.Helpers;
+using TinyClient.Response;
 
-namespace TinyClient.Response
+namespace TinyClient.Helpers
 {
-    public static class BatchParseHelper
+    public static class BatchSerializeHelper
     {
         public static string GetOpenBoundaryString(string boundary) => "--" + boundary;
         public static string GetCloseBoundaryString(string boundary) => "--" + boundary + "--";
@@ -26,9 +26,33 @@ namespace TinyClient.Response
             return resultCode;
         }
 
-       
+        public static void WriteUtf8(this Stream stream, string content)
+        {
+            stream.Write(Encoding.UTF8.GetBytes(content));
+        }
+        public static string GetBoundaryStringOrThrow(string contentTypeValue)
+        {
+            //"Content-Type, multipart/mixed; boundary=\"myCustomBoundary\""
+            var trimmed = contentTypeValue.Trim();
+            var contentMainType = HttpMediaTypes.Mixed + ";";
+            if (!trimmed.StartsWith(contentMainType))
+                throw new InvalidDataException($"Invalid Content-Type. {HttpMediaTypes.Mixed} is expected. Actual: {contentTypeValue}");
 
-     
+            trimmed = trimmed.Substring(contentMainType.Length).TrimStart(' ');
+
+            string boundaryHeader = "boundary";
+            if (!trimmed.StartsWith(boundaryHeader))
+                throw new InvalidDataException("Invalid Content-Type. Boundary token is missed");
+
+            trimmed = trimmed.Substring(boundaryHeader.Length).TrimStart(' ', '=', '"').TrimEnd('"');
+            if (string.IsNullOrWhiteSpace(trimmed))
+                throw new InvalidDataException("Invalid Content-Type. Boundary token is empty");
+
+            return trimmed;
+
+        }
+
+
 
         public static string ReadUntilBoundaryOrThrow(PeekableStreamReader reader, string boundary)
         {
@@ -44,7 +68,7 @@ namespace TinyClient.Response
                 if (reader.EndOfStream)
                     throw new InvalidDataException("Close boundary not found");
 
-                if (reader.PeekLine().StartsWith(BatchParseHelper.GetOpenBoundaryString(boundary)))
+                if (reader.PeekLine().StartsWith(BatchSerializeHelper.GetOpenBoundaryString(boundary)))
                     return stringBuilder.ToString();
                 else
                 {

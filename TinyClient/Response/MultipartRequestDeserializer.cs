@@ -9,18 +9,22 @@ namespace TinyClient.Response
 
     public class MultipartRequestDeserializer : IResponseDeserializer
     {
-        private readonly string _boundary;
         private readonly IResponseDeserializer[] _subresponseDeserializers;
 
-        public MultipartRequestDeserializer(string boundary, IResponseDeserializer[] subresponseDeserializers)
+        public MultipartRequestDeserializer(IResponseDeserializer[] subresponseDeserializers)
         {
-            _boundary = boundary;
             _subresponseDeserializers = subresponseDeserializers;
         }
 
         /// <exception cref="InvalidDataException"></exception>
         public IHttpResponse Deserialize(ResponseInfo responseInfo, Stream dataStream)
         {
+            var contentType = responseInfo.GetHeaderValueOrNull(HttpHelper.ContentTypeHeader);
+            if(string.IsNullOrWhiteSpace(contentType))
+                throw new InvalidDataException("Content-Type header missed");
+
+            var boundary = BatchSerializeHelper.GetBoundaryStringOrThrow(contentType);
+
             var subresponses = new List<IHttpResponse>(_subresponseDeserializers.Length);
             using (var reader = new PeekableStreamReader(dataStream))
             {
@@ -28,9 +32,9 @@ namespace TinyClient.Response
                 {
                     while (true)
                     {
-                        var subrequest = ParseNextSubresponseFrom(reader);
+                        var subrequest = ParseNextSubresponseFrom(reader, boundary);
                         subresponses.Add(subrequest);
-                        if (reader.PeekLine() == BatchParseHelper.GetCloseBoundaryString(_boundary))
+                        if (reader.PeekLine() == BatchSerializeHelper.GetCloseBoundaryString(boundary))
                             break;
                     }
                 }
@@ -42,11 +46,11 @@ namespace TinyClient.Response
         }
 
         /// <exception cref="InvalidDataException"></exception>
-        private HttpResponse<string> ParseNextSubresponseFrom(PeekableStreamReader reader)
+        private HttpResponse<string> ParseNextSubresponseFrom(PeekableStreamReader reader, string boundary)
         {
             var currentLine = reader.ReadFirstNonEmptyLine();
-            if (currentLine != BatchParseHelper.GetOpenBoundaryString(_boundary))
-                throw new InvalidDataException("Boundary missed");
+            if (currentLine != BatchSerializeHelper.GetOpenBoundaryString(boundary))
+                throw new InvalidDataException("Response boundary missed");
 
             currentLine = reader.ReadFirstNonEmptyLineOrThrow("Content type header not found");
             //  if (currentLine?.Trim() != HttpHelper.HttpRequestContentTypeHeaderString)
@@ -55,15 +59,17 @@ namespace TinyClient.Response
 
             currentLine = reader.ReadFirstNonEmptyLineOrThrow("Status code is missed");
 
-            var resultCode = BatchParseHelper.GetResultCodeOrThrow(currentLine);
+            var resultCode = BatchSerializeHelper.GetResultCodeOrThrow(currentLine);
 
             
 
-            var content = BatchParseHelper.ReadUntilBoundaryOrThrow(reader, _boundary);
+            var content = BatchSerializeHelper.ReadUntilBoundaryOrThrow(reader, boundary);
 
             return new HttpResponse<string>(
                 new ResponseInfo((HttpStatusCode) resultCode),
                 content);
         }
+
+     
     }
 }

@@ -66,7 +66,7 @@
     <Compile Include="JsonContent.cs" />
     <Compile Include="MultipartContent.cs" />
     <Compile Include="Response\AutoResponseDeserializer.cs" />
-    <Compile Include="Response\BatchParseHelper.cs" />
+    <Compile Include="Helpers\BatchSerializeHelper.cs" />
     <Compile Include="Response\EmptyResponse.cs" />
     <Compile Include="Response\EmptyResponseDeserializer.cs" />
     <Compile Include="IHttpResponse.cs" />

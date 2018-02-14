@@ -15,7 +15,7 @@ namespace TinyClient
             request.SetContent(content);
 
             var serializers =requests.Select(r=> new TextResponseDeserialaizer()).ToArray();
-            request.SetDeserializer(new MultipartRequestDeserializer(boundary, serializers));
+            request.SetDeserializer(new MultipartRequestDeserializer(serializers));
 
             return request;
         }
