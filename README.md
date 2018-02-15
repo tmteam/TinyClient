@@ -10,7 +10,7 @@ PM> Install-Package TinyClient
 - Fluent style
 
 
-#Easy start example:
+# Easy start example:
 
 ```
 var client = new HttpClient("http://myHost.io");
@@ -21,7 +21,7 @@ Console.WriteLine(received.Name);
 //need no to close connection
 ``` 
 
-#A little more fluent example:
+# A little more fluent example:
 ``` 
 var answer = client
     .Create("localhost:8080")
@@ -33,7 +33,7 @@ var answer = client
 Console.WriteLine(answer.Name);
 ``` 
 
-#Masters of hardcore example:
+# Masters of hardcore example:
 ```
 var customClient = HttpClient
     .Create("http://myHost.io")
