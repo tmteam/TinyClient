@@ -24,16 +24,31 @@ namespace HttpClientChannel.TestApplication
             Console.WriteLine(received.Name);
             //need no to close connection
             
-            //Custom way:
+            //Fluent way:
+            var answer = HttpClient
+                .Create("localhost:8080")
+                //Create the client
+                .Build() 
+                //Send and receive
+                .SendJsonPost("users", new MyRequestVM {Name = "Bender"})
+                //Throw if status code not in [200-299]
+                .ThrowIfFailed()
+                //Cast answer from json to MyAnswerVm or throw
+                .GetJsonObject<MyAnswerVm>();
+
+            Console.WriteLine(answer.Name);
+            
+            //hardcore way:
             var customClient = HttpClient
                 .Create("http://myHost.io")
                 .WithKeepAlive(true)
+                .WithCustomDecoder(ClientEncoders.Deflate)
                 .WithRequestTimeout(TimeSpan.FromSeconds(1))
-                .WithRequestMiddleware((r) => r.AddCustomHeader("sentBy", "customHeader"))
-                //.WithResponseMiddleware((r) => {
-                //        if (r.StatusCode != HttpStatusCode.OK)
-                //            throw new FormatException("Request failed with error: " + r.StatusCode);
-                //    })
+                .WithRequestMiddleware((r) => r.AddCustomHeader("sentBy", "MasterOfHardcore"))
+                .WithResponseMiddleware((r) => {
+                    if (r.StatusCode != HttpStatusCode.OK)
+                        throw new FormatException("Request failed with error: " + r.StatusCode);
+                })
                 .Build();
             
             //request uri is http://myHost.io/search?text=What+up&attributes=all
@@ -43,18 +58,15 @@ namespace HttpClientChannel.TestApplication
                 .AddUriParam("attributes", "all")
                 .AddCustomHeader("nugetPackage", "tinyClient")
                 .AddCustomHeader("_SessionId", "42")
+                .AddContentEncoder(ClientEncoders.Deflate)
                 .SetKeepAlive(true)
                 .SetTimeout(TimeSpan.FromSeconds(5))
                 .SetContent(new JsonContent(new MyRequestVM {Name = "Cartman"}));
 
             var textResponse = customClient
-                    .Send(customRequest)
-                    //Throw if response.StatusCode not in [200-299]
-                    .ThrowIfFailed()
-                    //Trying to cast response content to HttpResponse<string> and returns it string content
-                    .GetStringContentOrNull(); 
+                    .Send(customRequest) as HttpResponse<string>;
 
-            Console.WriteLine(textResponse);
+            Console.WriteLine(textResponse?.Content);
         }
     }
 
