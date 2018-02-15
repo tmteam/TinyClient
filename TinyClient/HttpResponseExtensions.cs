@@ -10,6 +10,13 @@ namespace TinyClient
 {
     public static class HttpResponseExtensions
     {
+        /// <exception cref="TinyHttpException"></exception>
+        public static IHttpResponse ThrowIfFailed(this IHttpResponse response)
+        {
+            if(!response.IsSuccessStatusCode())
+                throw new TinyHttpException(response.StatusCode, response);
+            return response;
+        }
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="JsonException"></exception>
         public static T GetJsonObject<T>(this IHttpResponse response)

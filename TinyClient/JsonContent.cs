@@ -19,26 +19,28 @@ namespace TinyClient
 
         public static JsonContent CreateForJsonString(string jsonString) => new JsonContent(stringContent: jsonString);
 
-        private readonly string _content;
 
         private JsonContent(string stringContent)
         {
-            _content = stringContent;
+            Content = stringContent;
         }
         public JsonContent(object content)
         {
             if(content!=null)
-                _content = JsonHelper.Serialize(content);
+                Content = JsonHelper.Serialize(content);
         }
 
         public string ContentType => HttpMediaTypes.JsonUtf8;
+
+        public string Content { get; }
+
         public void WriteTo(Stream stream, Uri host)
         {
-            if (string.IsNullOrWhiteSpace(_content))
+            if (string.IsNullOrWhiteSpace(Content))
                 return;
 
             var writer = new StreamWriter(stream, Encoding.UTF8);
-            writer.Write(_content);
+            writer.Write(Content);
             writer.Flush();
         }
     }

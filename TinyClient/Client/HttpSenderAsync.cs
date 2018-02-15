@@ -34,6 +34,8 @@ namespace TinyClient.Client
         public IHttpResponse Send(HttpClientRequest request)
         {
             var res = SendAndReceive(request);
+            HttpWebResponse webResponse;
+
             try
             {
                 if (request.Timeout.HasValue)
@@ -43,16 +45,20 @@ namespace TinyClient.Client
                 }
                 else
                     res.Wait();
+                webResponse = res.Result;
             }
             catch (AggregateException aggregateException)
             {
-                throw aggregateException.GetBaseException();
+                var originException =  aggregateException.GetBaseException();
+                var webEx = originException as WebException;
+                if (webEx == null)
+                    throw originException;
+                var httpResponse = webEx.Response as HttpWebResponse;
+                if (httpResponse == null)
+                    throw originException;
+                webResponse = httpResponse;
             }
-
-            var webResponse = res.Result;
-
             var response = ToResponse(request, webResponse);
-
             webResponse.Close();
             return response;
         }
@@ -97,9 +103,10 @@ namespace TinyClient.Client
             webRequest.ServicePoint.Expect100Continue = false;
             return webRequest;
         }
+        /// <exception cref="InvalidDataException"></exception>
         private IHttpResponse ToResponse(HttpClientRequest request, HttpWebResponse webResponse)
         {
-            var deserializer = request.Deserializer;
+          
 
             var responseHeaders = new Dictionary<string, string>();
             foreach (var key in webResponse.Headers.AllKeys)
@@ -108,14 +115,19 @@ namespace TinyClient.Client
 
             var stream = webResponse.GetResponseStream();
 
-            if (responseHeaders.ContainsKey("Content-Encoding"))
+            if (responseHeaders.ContainsKey(HttpHelper.ContentEncodingHeader))
             {
-                var encodingType = responseHeaders["Content-Encoding"];
+                var encodingType = responseHeaders[HttpHelper.ContentEncodingHeader];
                 if (_decoders.ContainsKey(encodingType))
-                {
                     stream = _decoders[encodingType].GetDecodingStream(stream);
-                }
             }
+
+            IResponseDeserializer deserializer;
+
+            if ((int)webResponse.StatusCode < 200 || (int)webResponse.StatusCode >= 300)
+                deserializer = new AutoResponseDeserializer();    
+            else
+                deserializer = request.Deserializer;
 
             var deserialized = deserializer.Deserialize(responseInfo,stream);
             return deserialized;

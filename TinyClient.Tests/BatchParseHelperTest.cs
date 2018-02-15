@@ -96,8 +96,6 @@ namespace TinyClient.Tests
         [TestCase(" boundary=\"myCustomBoundary\"")]
         [TestCase("boundary=\"myCustomBoundary\"")]
         [TestCase("multipart/mixed;")]
-
-
         public void GetBoundaryStringOrThrow_ContentTypeStringIsInvalid_Throws(string contentTypeString)
         {
             Assert.Throws<InvalidDataException>(()=> BatchSerializeHelper.GetBoundaryStringOrThrow(contentTypeString));

@@ -7,6 +7,7 @@ namespace TinyClient.Response
     public class AutoResponseDeserializer: IResponseDeserializer
     {
         /// <exception cref="NotSupportedException"></exception>
+        /// <exception cref="InvalidDataException"></exception>
         public IHttpResponse Deserialize(ResponseInfo responseInfo, Stream dataStream)
         {
             var contentType = responseInfo.GetHeaderValueOrNull(HttpHelper.ContentTypeHeader);

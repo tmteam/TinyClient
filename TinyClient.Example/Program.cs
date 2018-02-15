@@ -30,11 +30,11 @@ namespace HttpClientChannel.TestApplication
                 .WithKeepAlive(true)
                 .WithRequestTimeout(TimeSpan.FromSeconds(1))
                 .WithRequestMiddleware((r) => r.AddCustomHeader("sentBy", "customHeader"))
-                .WithResponseMiddleware((r) => {
-                        if (r.StatusCode != HttpStatusCode.OK)
-                            throw new FormatException("Request failed with error: " + r.StatusCode);
-                    }
-                ).Build();
+                //.WithResponseMiddleware((r) => {
+                //        if (r.StatusCode != HttpStatusCode.OK)
+                //            throw new FormatException("Request failed with error: " + r.StatusCode);
+                //    })
+                .Build();
             
             //request uri is http://myHost.io/search?text=What+up&attributes=all
             var customRequest = HttpClientRequest
@@ -47,9 +47,14 @@ namespace HttpClientChannel.TestApplication
                 .SetTimeout(TimeSpan.FromSeconds(5))
                 .SetContent(new JsonContent(new MyRequestVM {Name = "Cartman"}));
 
-            var response = customClient.Send(customRequest);
-            var textResponse = response as HttpResponse<string>;
-            Console.WriteLine(textResponse.Content);
+            var textResponse = customClient
+                    .Send(customRequest)
+                    //Throw if response.StatusCode not in [200-299]
+                    .ThrowIfFailed()
+                    //Trying to cast response content to HttpResponse<string> and returns it string content
+                    .GetStringContentOrNull(); 
+
+            Console.WriteLine(textResponse);
         }
     }
 

@@ -89,7 +89,6 @@ namespace TinyClient.Tests
                               "Content-Type: application/http; msgtype=request\r\n\r\n" +
                               $"POST /{query} HTTP/1.1\r\n" +
                               "Host: www.ya.ru:9090\r\n" +
-                              "\r\n" +
                               "Content-Type: application/json; charset=utf-8\r\n\r\n" +
                               vmSerialized+"\r\n"+
                               "--" + boundary + "--";
@@ -132,14 +131,12 @@ namespace TinyClient.Tests
                               "Content-Type: application/http; msgtype=request\r\n\r\n" +
                               $"PUT /{query1} HTTP/1.1\r\n" +
                               "Host: localhost:9090\r\n" +
-                              "\r\n"+
                               "Content-Type: application/json; charset=utf-8\r\n\r\n" +
                               vm1Serialized + "\r\n" +
                               "--" + boundary + "\r\n"+
                               "Content-Type: application/http; msgtype=request\r\n\r\n" +
                               $"PUT /{query2} HTTP/1.1\r\n" +
                               "Host: localhost:9090\r\n" +
-                              "\r\n" +
                               "Content-Type: application/json; charset=utf-8\r\n\r\n" +
                               vm2Serialized + "\r\n" +
                               "--" + boundary + "--";

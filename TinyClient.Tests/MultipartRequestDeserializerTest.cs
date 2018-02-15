@@ -10,7 +10,6 @@ using TinyClient.Response;
 namespace TinyClient.Tests
 {
     //https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html
-
     [TestFixture]
     public class MultipartRequestDeserializerTest
     {
@@ -70,12 +69,13 @@ namespace TinyClient.Tests
         }
 
         [Test]
-        public void AnswerIsEmpty_SingleDeserializer_Throws()
+        public void AnswerIsEmpty_SingleDeserializer_DoesNotThrow()
         {
             var deserializer = new MultipartRequestDeserializer(
                 new[] { new TextResponseDeserialaizer() });
 
-            Assert.Throws<InvalidDataException>(() => deserializer.Deserialize(GetFakeInfo("boundary"), AsStream("")));
+            var response = deserializer.Deserialize(GetFakeInfo("boundary"), AsStream(""));
+            Assert.AreEqual(0, response.GetMultipartResponse().Length);
         }
 
 
@@ -114,9 +114,6 @@ namespace TinyClient.Tests
                                  data + 
                                 "\r\n" +
                                 "--batch-1--";
-            //var request = HttpClientRequest
-            //    .CreateGet()
-            //    .SetMultipartContent(HttpClientRequest.CreateJsonPost(new object()));
 
             var response =
                 DeserializeAnswer(new[] { new TextResponseDeserialaizer()}, boundary, answerContent).Content[0] as
@@ -196,7 +193,7 @@ namespace TinyClient.Tests
             Assert.AreEqual(data2, responses[1].Content);
         }
         [Test]
-        public void Deserialize_AnswersCountIsLessThanDeserializersCount_throws()
+        public void Deserialize_AnswersCountIsLessThanDeserializersCount_NotThrows()
         {
             var boundary = "batch-1";
 
@@ -216,7 +213,8 @@ namespace TinyClient.Tests
                 new TextResponseDeserialaizer()
             });
             var stream = AsStream(answerContent);
-            Assert.Throws<InvalidDataException>(() => deserializer.Deserialize(GetFakeInfo(boundary), stream));
+            var res =deserializer.Deserialize(GetFakeInfo(boundary), stream);
+            Assert.AreEqual(2, res.GetMultipartResponse().Length);
         }
 
         [Test]

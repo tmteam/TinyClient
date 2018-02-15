@@ -5,8 +5,6 @@ using TinyClient.Helpers;
 
 namespace TinyClient.Response
 {
-    
-
     public class MultipartRequestDeserializer : IResponseDeserializer
     {
         private readonly IResponseDeserializer[] _subresponseDeserializers;
@@ -39,8 +37,8 @@ namespace TinyClient.Response
                     }
                 }
             }
-            if(subresponses.Count!= _subresponseDeserializers.Length)
-                throw new InvalidDataException($"Actual and expected items count are not equal. Actual: {subresponses.Count}, expected: {_subresponseDeserializers.Length}");
+            if(subresponses.Count>_subresponseDeserializers.Length)
+                throw new InvalidDataException($"Actual and items count is greater than expected. Actual: {subresponses.Count}, expected: {_subresponseDeserializers.Length}");
 
             return new HttpResponse<IHttpResponse[]>(responseInfo, subresponses.ToArray());
         }
