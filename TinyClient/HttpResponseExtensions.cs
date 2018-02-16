@@ -14,17 +14,24 @@ namespace TinyClient
         public static IHttpResponse ThrowIfFailed(this IHttpResponse response)
         {
             if(!response.IsSuccessStatusCode())
-                throw new TinyHttpException(response.StatusCode, response);
+                throw new TinyHttpException(response);
             return response;
         }
-        /// <exception cref="ArgumentException"></exception>
-        /// <exception cref="JsonException"></exception>
+
+        /// <exception cref="InvalidDataException"></exception>
         public static T GetJsonObject<T>(this IHttpResponse response)
         {
             var textResponse = response as HttpResponse<string>;
             if (textResponse == null)
-                throw new ArgumentException("Response contains not text");
-            return JsonHelper.Deserialize<T>(textResponse.Content);
+                throw new InvalidDataException("Response contains no text");
+            try
+            {
+                return JsonHelper.Deserialize<T>(textResponse.Content);
+            }
+            catch (JsonException e)
+            {
+                throw new InvalidDataException("Json deserialization failed: "+ e.Message, e);
+            }
         }
 
         /// <exception cref="InvalidDataException"></exception>

@@ -3,22 +3,34 @@ using System.Net;
 
 namespace TinyClient
 {
-    public class TinyHttpException : Exception
+    public class TinyHttpException : WebException
     {
-        public HttpStatusCode Code { get; }
-        public IHttpResponse Response { get; }
+        public HttpStatusCode Code => HttpResponse.StatusCode;
+        public IHttpResponse HttpResponse { get; }
 
+        public TinyHttpException(IHttpResponse response, Exception innerException) : base(
+            "Http request failed. Response status: " + response.StatusCode, innerException) {
+            this.HttpResponse = response;
+        }
 
-        public TinyHttpException(HttpStatusCode code, IHttpResponse response, string message)
+        public TinyHttpException(IHttpResponse response, string message, Exception innerException, WebResponse webResponse) :base(message, innerException, WebExceptionStatus.ProtocolError, webResponse)
+        {
+            this.HttpResponse = response;
+        } 
+        public TinyHttpException(IHttpResponse response, string message, Exception innerException) : base(
+            message, innerException)
+        {
+            this.HttpResponse = response;
+        }
+
+        public TinyHttpException(IHttpResponse response, string message)
             : base(message)
         {
-            this.Code = code;
-            this.Response = response;
+            this.HttpResponse = response;
         }
-        public TinyHttpException(HttpStatusCode code, IHttpResponse response):base("Http request failed. Response status: "+ code)
+        public TinyHttpException(IHttpResponse response):base("Http request failed. Response status: "+ response.StatusCode)
         {
-            this.Code = code;
-            this.Response = response;
+            this.HttpResponse = response;
         }
     }
 }

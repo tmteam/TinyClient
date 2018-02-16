@@ -127,16 +127,25 @@ namespace TinyClient
             return this;
         }
 
+        /// <exception cref="InvalidDataException"/>
         public byte[] GetData(Uri host)
         {
             if(Content==null)
                 return new byte[0];
-            var memoryStream = new MemoryStream();
-            Stream stream = memoryStream;
-            if (Encoder != null)
-                stream = Encoder.GetEncodingStream(stream);
-            Content.WriteTo(stream, host);
-            return memoryStream.ToArray();
+            try
+            {
+                var memoryStream = new MemoryStream();
+                Stream stream = memoryStream;
+                if (Encoder != null)
+                    stream = Encoder.GetEncodingStream(stream);
+
+                Content.WriteTo(stream, host);
+                return memoryStream.ToArray();
+            }
+            catch (Exception e)
+            {
+                throw new InvalidDataException("Request serialization error.", e);
+            }
         }
 
         public HttpClientRequest GetCopyFor(string subQuery)

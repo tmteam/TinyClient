@@ -29,7 +29,7 @@ namespace TinyClient.Client
             };
         }
 
-        /// <exception cref="WebException"></exception>
+        /// <exception cref="WebException">Connection troubles</exception>
         /// <exception cref="InvalidDataException"></exception>
         public IHttpResponse Send(HttpClientRequest request)
         {
@@ -75,6 +75,7 @@ namespace TinyClient.Client
             return asyncRequest.Send();
          
         }
+        /// <exception cref="InvalidDataException">Request serialization error</exception>
         private HttpWebRequest CreateRequest(HttpClientRequest request, out byte[] data)
         {
             var uri = request.GetUriFor(_host);
@@ -106,31 +107,37 @@ namespace TinyClient.Client
         /// <exception cref="InvalidDataException"></exception>
         private IHttpResponse ToResponse(HttpClientRequest request, HttpWebResponse webResponse)
         {
-          
-
-            var responseHeaders = new Dictionary<string, string>();
-            foreach (var key in webResponse.Headers.AllKeys)
-                responseHeaders.Add(key, webResponse.Headers.Get(key));
-            var responseInfo = new ResponseInfo(webResponse.ResponseUri, responseHeaders.ToArray(), webResponse.StatusCode);
-
-            var stream = webResponse.GetResponseStream();
-
-            if (responseHeaders.ContainsKey(HttpHelper.ContentEncodingHeader))
+            try
             {
-                var encodingType = responseHeaders[HttpHelper.ContentEncodingHeader];
-                if (_decoders.ContainsKey(encodingType))
-                    stream = _decoders[encodingType].GetDecodingStream(stream);
+                var responseHeaders = new Dictionary<string, string>();
+                foreach (var key in webResponse.Headers.AllKeys)
+                    responseHeaders.Add(key, webResponse.Headers.Get(key));
+                var responseInfo = new ResponseInfo(webResponse.ResponseUri, responseHeaders.ToArray(), webResponse.StatusCode);
+
+                var stream = webResponse.GetResponseStream();
+
+                if (responseHeaders.ContainsKey(HttpHelper.ContentEncodingHeader))
+                {
+                    var encodingType = responseHeaders[HttpHelper.ContentEncodingHeader];
+                    if (_decoders.ContainsKey(encodingType))
+                        stream = _decoders[encodingType].GetDecodingStream(stream);
+                }
+
+                IResponseDeserializer deserializer;
+
+                if ((int)webResponse.StatusCode < 200 || (int)webResponse.StatusCode >= 300)
+                    deserializer = new AutoResponseDeserializer();
+                else
+                    deserializer = request.Deserializer;
+
+                var deserialized = deserializer.Deserialize(responseInfo, stream);
+                return deserialized;
             }
-
-            IResponseDeserializer deserializer;
-
-            if ((int)webResponse.StatusCode < 200 || (int)webResponse.StatusCode >= 300)
-                deserializer = new AutoResponseDeserializer();    
-            else
-                deserializer = request.Deserializer;
-
-            var deserialized = deserializer.Deserialize(responseInfo,stream);
-            return deserialized;
+            catch (Exception e)
+            {
+                throw new InvalidDataException("Response deserialization error: "+ e.Message, e);
+            }
+         
         }
 
 
