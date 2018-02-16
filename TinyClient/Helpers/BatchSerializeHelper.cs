@@ -28,7 +28,7 @@ namespace TinyClient.Helpers
 
         public static void WriteUtf8(this Stream stream, string content)
         {
-            stream.Write(Encoding.UTF8.GetBytes(content));
+            stream.Write(new UTF8Encoding(false).GetBytes(content));
         }
         public static string GetBoundaryStringOrThrow(string contentTypeValue)
         {

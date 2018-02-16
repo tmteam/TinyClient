@@ -39,7 +39,7 @@ namespace TinyClient
             if (string.IsNullOrWhiteSpace(Content))
                 return;
 
-            var writer = new StreamWriter(stream, Encoding.UTF8);
+            var writer = new StreamWriter(stream, new UTF8Encoding(false));
             writer.Write(Content);
             writer.Flush();
         }
