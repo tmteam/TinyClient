@@ -65,3 +65,66 @@ var textResponse = customClient
 Console.WriteLine(textResponse?.Content);
 ```  
   
+# Exception handling:
+
+Request-response process produces different results:
+
+1) Response is succesfully ([200-299] http codes)
+2) Server error: (non succesfully http codes)
+	- You can catch an exception here 
+	- Or do you want to get response with bad status in usual flow?
+3) Serialization or deserialization error
+4) Connection errors (host not found, invalid url etc...)
+5) Tiny client timeout error
+
+## Exceptional way
+```
+try
+{
+	var response = client
+		//throws WebException (connection errors) or TinyTimeoutException:WebException
+		.SendGet("users")
+		//throws TinyWebException: WebException (status errors)
+		.ThrowIfFailed()
+		//throws InvalidDataException 
+		.GetJsonObject<MyAnswerVm>();
+		
+	//handle the response	
+}
+
+catch(WebException e){
+	if (e is TinyHttpException){
+		var errorResponse = e.HttpResponse;
+		//Do something with errorResponse
+	}
+	else if(e is TinyTimeoutException){
+		//...
+	}
+	else{
+		//Do something with connection problems
+	}
+}
+catch(InvalidDataException e) {
+	//omg, the server is going crazy!
+}
+````
+
+## Error code way
+
+```
+try
+{
+	var response = client
+		//throws WebException (connection errors) or TimeoutException
+		.SendGet("users");
+		
+	if (response.IsSuccesfully()) {
+		//handle the response
+	} else {
+		//handle bad status code
+	}
+}
+catch(Exception e){
+		//...
+}
+```  
