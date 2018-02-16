@@ -41,7 +41,7 @@ namespace TinyClient.Client
                 if (request.Timeout.HasValue)
                 {
                     if (!res.Wait(request.Timeout.Value))
-                        throw new TimeoutException($"Request timeout of {request.Timeout.Value} is expired");
+                        throw new TinyTimeoutException($"Request timeout of {request.Timeout.Value} is expired");
                 }
                 else
                     res.Wait();

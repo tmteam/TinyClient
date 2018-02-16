@@ -77,6 +77,7 @@
     <Compile Include="HttpResponseOfT.cs" />
     <Compile Include="Response\TextResponseDeserialaizer.cs" />
     <Compile Include="TinyHttpException.cs" />
+    <Compile Include="TinyTimeoutException.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

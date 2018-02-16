@@ -40,7 +40,7 @@ namespace TinyClient
 
         /// <exception cref="WebException"></exception>
         /// <exception cref="InvalidDataException"></exception>
-        /// <exception cref="TimeoutException"></exception>
+        /// <exception cref="TinyTimeoutException">Tiny client timeout</exception>
         public IHttpResponse Send(HttpClientRequest request)
         {
             if (!request.Timeout.HasValue && Timeout.HasValue)
