@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using TinyClient.Helpers;
 using TinyClient.Response;
@@ -18,8 +19,7 @@ namespace TinyClient.Client
         {
             _host = host;
             _decoders = new Dictionary<string, IContentEncoder>();
-            foreach (var contentEncoder in decoders)
-            {
+            foreach (var contentEncoder in decoders) {
                 _decoders.Add(contentEncoder.EncodingType, contentEncoder);
             }
 
@@ -33,15 +33,18 @@ namespace TinyClient.Client
         /// <exception cref="InvalidDataException"></exception>
         public IHttpResponse Send(HttpClientRequest request)
         {
-            var res = SendAndReceive(request);
+            var asyncRequest = CreateRequest(request);
+            var res = asyncRequest.Send();
             HttpWebResponse webResponse;
 
             try
             {
                 if (request.Timeout.HasValue)
                 {
-                    if (!res.Wait(request.Timeout.Value))
+                    if (!res.Wait(request.Timeout.Value)) {
+                        asyncRequest.Abort();
                         throw new TinyTimeoutException($"Request timeout of {request.Timeout.Value} is expired");
+                    }
                 }
                 else
                     res.Wait();
@@ -64,15 +67,13 @@ namespace TinyClient.Client
         }
 
     
-        /// <exception cref="WebException"></exception>
         /// <exception cref="InvalidDataException"></exception>
-        private Task<HttpWebResponse> SendAndReceive(HttpClientRequest request)
+        private AsyncRequest CreateRequest(HttpClientRequest request)
         {
             byte[] data;
             var webRequest = CreateRequest(request, out data);
 
-            var asyncRequest = new AsyncRequest(webRequest, data);
-            return asyncRequest.Send();
+            return new AsyncRequest(webRequest, data);
          
         }
         /// <exception cref="InvalidDataException">Request serialization error</exception>

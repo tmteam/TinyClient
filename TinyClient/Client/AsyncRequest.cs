@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using TinyClient.Helpers;
 
@@ -16,14 +17,20 @@ namespace TinyClient.Client
             _request = request;
             _dataOrNull = dataOrNull;
         }
-      
 
+        /// <exception cref="InvalidOperationException"></exception>
+        public void Abort()
+        {
+            if(_completionSource==null)
+                throw new InvalidOperationException("Request is not sent yet");
+            _request.Abort();
+        }
+        /// <exception cref="InvalidOperationException"></exception>
         public Task<HttpWebResponse> Send()
         {
             if (_completionSource != null)
                 throw new InvalidOperationException("Request is already sent");
             _completionSource = new TaskCompletionSource<HttpWebResponse>();
-
             if (_dataOrNull != null)
                 SendAsync();
             else
@@ -38,7 +45,8 @@ namespace TinyClient.Client
                 .FromAsync(_request.BeginGetRequestStream, _request.EndGetRequestStream, null);
             getRequestTask.ContinueWith(HandleRequestStream);
         }
-        
+
+
         private void ReceiveAsync()
         {
             var getResponseTask = Task.Factory
