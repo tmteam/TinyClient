@@ -47,3 +47,7 @@ _ReSharper*/
 #packages
 [Pp]ackages/
 TinyClient*.nupkg
+/.vs/TinyClient/v15/Server/sqlite3/db.lock
+/.vs/TinyClient/v15/Server/sqlite3/storage.ide
+/.vs/TinyClient/v15/Server/sqlite3/storage.ide-shm
+/.vs/TinyClient/v15/Server/sqlite3/storage.ide-wal
