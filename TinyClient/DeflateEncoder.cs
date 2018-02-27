@@ -11,7 +11,7 @@ namespace TinyClient
     {
         public string EncodingType => "deflate";
         public Stream GetEncodingStream(Stream destination) {
-            return new DeflateStream(destination, CompressionMode.Compress, true);
+            return new DeflateStream(destination, CompressionMode.Compress,true);
         }
 
         public Stream GetDecodingStream(Stream source) {

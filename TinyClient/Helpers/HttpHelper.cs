@@ -6,6 +6,7 @@ namespace TinyClient.Helpers
     {
         public const string ContentTypeHeader = "Content-Type";
         public const string ContentEncodingHeader = "Content-Encoding";
+        public const string AcceptEncodingHeader = "Accept-Encoding";
         public static string UserAgentHeader = "User-Agent";
 
         public static string HttpRequestContentTypeHeaderString => $"{HttpHelper.ContentTypeHeader}: {HttpMediaTypes.Http}; msgtype=request";

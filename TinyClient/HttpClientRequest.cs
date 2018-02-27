@@ -59,6 +59,8 @@ namespace TinyClient
         public KeyValuePair<string, string>[] CustomHeaders => headers.ToArray();
         public TimeSpan? Timeout { get; private set; }
         public IContentEncoder Encoder { get; private set; }
+        public IContentEncoder Decoder { get; private set; }
+
         /// <summary>
         /// Full query path, includes Query and UriParams (without host)
         /// Starts with '/'
@@ -78,6 +80,14 @@ namespace TinyClient
             return this;
         }
 
+        public HttpClientRequest AddAcceptEncoding(IContentEncoder decoder)
+        {
+            if(Decoder!=null)
+                throw new InvalidOperationException("You can set decoder only once");
+            Decoder = decoder;
+            return this;
+
+        }
         public HttpClientRequest AddContentEncoder(IContentEncoder encoder)
         {
             if(Encoder!=null)
@@ -135,11 +145,17 @@ namespace TinyClient
             try
             {
                 var memoryStream = new MemoryStream();
-                Stream stream = memoryStream;
                 if (Encoder != null)
-                    stream = Encoder.GetEncodingStream(stream);
-
-                Content.WriteTo(stream, host);
+                {
+                    using (var encodingStream  = Encoder.GetEncodingStream(memoryStream))
+                    {
+                        Content.WriteTo(encodingStream, host);
+                    }
+                }
+                else
+                {
+                    Content.WriteTo(memoryStream, host);
+                }
                 return memoryStream.ToArray();
             }
             catch (Exception e)

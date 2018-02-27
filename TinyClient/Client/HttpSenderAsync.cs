@@ -82,7 +82,14 @@ namespace TinyClient.Client
             var uri = request.GetUriFor(_host);
             var webRequest = (HttpWebRequest)WebRequest.Create(uri);
             webRequest.Method = request.Method.Name;
-            
+            if (request.Encoder != null) {
+                webRequest.Headers.Add(HttpHelper.ContentEncodingHeader,request.Encoder.EncodingType);
+            }
+
+            if (request.Decoder != null)
+            {
+                webRequest.Headers.Add(HttpHelper.AcceptEncodingHeader, request.Decoder.EncodingType);
+            }
             foreach (var header in request.CustomHeaders)
             {
                 if (_specialHeadersMap.ContainsKey(header.Key))

@@ -13,5 +13,6 @@ namespace TinyClient
         Stream GetEncodingStream(Stream destination);
 
         Stream GetDecodingStream(Stream source);
+
     }
 }
