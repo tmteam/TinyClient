@@ -43,7 +43,10 @@ namespace TinyClient.Client
         {
             var getRequestTask = Task.Factory
                 .FromAsync(_request.BeginGetRequestStream, _request.EndGetRequestStream, null);
-            getRequestTask.ContinueWith(HandleRequestStream);
+            getRequestTask.ContinueWith(c => _completionSource.TrySetException(c.Exception.GetBaseException()),
+                TaskContinuationOptions.OnlyOnFaulted);
+            getRequestTask.ContinueWith(HandleRequestStream, 
+                TaskContinuationOptions.NotOnFaulted);
         }
 
 
@@ -51,7 +54,10 @@ namespace TinyClient.Client
         {
             var getResponseTask = Task.Factory
                 .FromAsync(_request.BeginGetResponse, _request.EndGetResponse, null);
-            getResponseTask.ContinueWith(HandleResponse);
+            getResponseTask.ContinueWith(c => _completionSource.TrySetException(c.Exception.GetBaseException())
+                , TaskContinuationOptions.OnlyOnFaulted);
+            getResponseTask.ContinueWith(HandleResponse, 
+                TaskContinuationOptions.NotOnFaulted);
         }
 
         private void HandleRequestStream(Task<Stream> task) {
