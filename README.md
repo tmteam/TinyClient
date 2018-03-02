@@ -55,6 +55,7 @@ var customRequest = HttpClientRequest
     .AddCustomHeader("nugetPackage", "tinyClient")
     .AddCustomHeader("_SessionId", "42")
     .AddContentEncoder(ClientEncoders.Deflate)
+    .AddAcceptEncoding(ClientEncoders.Deflate)
     .SetKeepAlive(true)
     .SetTimeout(TimeSpan.FromSeconds(5))
     .SetContent(new JsonContent(new MyRequestVM {Name = "Cartman"}));
