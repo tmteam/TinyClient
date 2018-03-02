@@ -54,22 +54,27 @@ namespace TinyClient.Client
         {
             var getResponseTask = Task.Factory
                 .FromAsync(_request.BeginGetResponse, _request.EndGetResponse, null);
-            getResponseTask.ContinueWith(c => _completionSource.TrySetException(c.Exception.GetBaseException())
+
+            getResponseTask.ContinueWith(c 
+                    => _completionSource.TrySetException(c.Exception.GetBaseException())
                 , TaskContinuationOptions.OnlyOnFaulted);
+
             getResponseTask.ContinueWith(HandleResponse, 
                 TaskContinuationOptions.NotOnFaulted);
         }
 
         private void HandleRequestStream(Task<Stream> task) {
+            if (task.IsFaulted)
+            {
+                _completionSource.TrySetException(task.Exception.InnerException);
+                return;
+            }
             if (task.IsCanceled) {
                 _completionSource.TrySetCanceled();
                 return;
             }
 
-            if (task.IsFaulted) {
-                _completionSource.TrySetException(task.Exception.InnerException);
-                return;
-            }
+            
             var stream = task.Result;
             stream.Write(_dataOrNull);
             ReceiveAsync();
@@ -77,15 +82,17 @@ namespace TinyClient.Client
 
         private void HandleResponse(Task<WebResponse> task)
         {
+            if (task.IsFaulted)
+            {
+                _completionSource.TrySetException(task.Exception.InnerException);
+                return;
+            }
             if (task.IsCanceled) {
                 _completionSource.TrySetCanceled();
                 return;
             }
 
-            if (task.IsFaulted) {
-                _completionSource.TrySetException(task.Exception.InnerException);
-                return;
-            }
+            
             _completionSource.TrySetResult((HttpWebResponse)task.Result);
         }
 
