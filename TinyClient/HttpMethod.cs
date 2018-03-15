@@ -8,8 +8,7 @@
         public static HttpMethod Delete { get; } = new HttpMethod("DELETE");
         public static HttpMethod Head { get; } = new HttpMethod("HEAD");
 
-        private HttpMethod(string name)
-        {
+        public HttpMethod(string name) {
             this.Name = name;
         }
 

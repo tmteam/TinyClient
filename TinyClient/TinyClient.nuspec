@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>TinyClient</id>
-    <version>1.0.5</version>
+    <version>1.0.7</version>
     <title>Tiny Http Client</title>
     <authors>Tmteam</authors>
     <licenseUrl>https://github.com/tmteam/TinyClient/blob/master/LICENSE</licenseUrl>
@@ -10,7 +10,7 @@
     <iconUrl>https://maxcdn.icons8.com/wp-content/uploads/2014/10/fly.png</iconUrl>
    	<requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Http client for Net framework 4</description>
-    <releaseNotes>Timeout and encoding handling</releaseNotes>
+    <releaseNotes>minor changes</releaseNotes>
     <copyright>Copyright 2018</copyright>
     <tags>Http Client NetFramework4 Rest</tags>
   </metadata>
