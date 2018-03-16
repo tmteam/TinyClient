@@ -41,7 +41,10 @@ namespace TinyClient.Client
             {
                 if (request.Timeout.HasValue)
                 {
-                    if (!res.Wait(request.Timeout.Value)) {
+                    if (!res.Wait(request.Timeout.Value))
+                    {
+                        //ignore task exception
+                        res.ContinueWith(c => c.Exception.GetBaseException(), TaskContinuationOptions.OnlyOnFaulted);
                         asyncRequest.Abort();
                         throw new TinyTimeoutException($"Request timeout of {request.Timeout.Value} is expired");
                     }
@@ -53,13 +56,11 @@ namespace TinyClient.Client
             catch (AggregateException aggregateException)
             {
                 var originException =  aggregateException.GetBaseException();
-                var webEx = originException as WebException;
-                if (webEx == null)
+
+                if (!(originException is WebException webEx))
                     throw originException;
-                var httpResponse = webEx.Response as HttpWebResponse;
-                if (httpResponse == null)
-                    throw originException;
-                webResponse = httpResponse;
+
+                webResponse = webEx.Response as HttpWebResponse ?? throw originException;
             }
             var response = ToResponse(request, webResponse);
             webResponse.Close();

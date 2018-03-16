@@ -55,9 +55,9 @@ namespace TinyClient.Client
             var getResponseTask = Task.Factory
                 .FromAsync(_request.BeginGetResponse, _request.EndGetResponse, null);
 
-            getResponseTask.ContinueWith(c 
-                    => _completionSource.TrySetException(c.Exception.GetBaseException())
-                , TaskContinuationOptions.OnlyOnFaulted);
+            getResponseTask.ContinueWith(c => {
+                return _completionSource.TrySetException(c.Exception.GetBaseException());
+            }, TaskContinuationOptions.OnlyOnFaulted);
 
             getResponseTask.ContinueWith(HandleResponse, 
                 TaskContinuationOptions.NotOnFaulted);
