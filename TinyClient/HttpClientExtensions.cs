@@ -35,30 +35,32 @@ namespace TinyClient
         /// <exception cref="TinyHttpException">Server side error</exception>
         /// <exception cref="InvalidDataException">Data format error</exception>
         /// <exception cref="TinyTimeoutException">Tiny client timeout</exception>
-        public static TResponseJsonObject GetAndReceiveJson<TResponseJsonObject>(this HttpClient client, string query) 
-            => client.SendAndReceiveJsonObject<TResponseJsonObject>(HttpClientRequest.CreateGet(query));
+        public static TResponseJsonObject GetAndReceiveJson<TResponseJsonObject>(this HttpClient client, string query, bool throwIfFailed = true) 
+            => client.SendAndReceiveJsonObject<TResponseJsonObject>(HttpClientRequest.CreateGet(query), throwIfFailed);
 
         /// <exception cref="WebException">Channel error</exception>
         /// <exception cref="TinyHttpException">Server side error</exception>
         /// <exception cref="InvalidDataException">Data format error</exception>
         /// <exception cref="TinyTimeoutException">Tiny client timeout</exception>
-        public static TResponseJsonObject PutAndReceiveJson<TResponseJsonObject>(this HttpClient client, string query,
-            object jsonSerializeableContent) => client.SendAndReceiveJsonObject<TResponseJsonObject>(HttpClientRequest.CreateJsonPut(query, jsonSerializeableContent));
+        public static TResponseJsonObject PutAndReceiveJson<TResponseJsonObject>(this HttpClient client, string query, object jsonSerializeableContent, bool throwIfFailed = true) 
+            => client.SendAndReceiveJsonObject<TResponseJsonObject>(HttpClientRequest.CreateJsonPut(query, jsonSerializeableContent), throwIfFailed);
 
         /// <exception cref="WebException">Channel error</exception>
         /// <exception cref="TinyHttpException">Server side error</exception>
         /// <exception cref="InvalidDataException">Data format error</exception>
         /// <exception cref="TinyTimeoutException">Tiny client timeout</exception>
-        public static TResponseJsonObject PostAndReceiveJson<TResponseJsonObject>(this HttpClient client, string query,
-            object jsonSerializeableContent) => client.SendAndReceiveJsonObject<TResponseJsonObject>(HttpClientRequest.CreateJsonPost(query, jsonSerializeableContent));
+        public static TResponseJsonObject PostAndReceiveJson<TResponseJsonObject>(this HttpClient client, string query, object jsonSerializeableContent, bool throwIfFailed = true) 
+            => client.SendAndReceiveJsonObject<TResponseJsonObject>(HttpClientRequest.CreateJsonPost(query, jsonSerializeableContent), throwIfFailed);
 
         /// <exception cref="WebException">Channel error</exception>
         /// <exception cref="TinyHttpException">Server side error</exception>
         /// <exception cref="InvalidDataException">Data format error</exception>
         /// <exception cref="TinyTimeoutException">Tiny client timeout</exception>
-        public static TJsonObject SendAndReceiveJsonObject<TJsonObject>(this HttpClient client,  HttpClientRequest request)
+        public static TJsonObject SendAndReceiveJsonObject<TJsonObject>(this HttpClient client,  HttpClientRequest request, bool throwIfFailed = true)
         {
             var response = client.Send(request);
+            if (throwIfFailed)
+                response.ThrowIfFailed();
 
             var stringResponse = response as HttpResponse<string>;
             if (stringResponse == null)
@@ -81,31 +83,33 @@ namespace TinyClient
         /// <exception cref="TinyHttpException">Server side error</exception>
         /// <exception cref="InvalidDataException">Data format error</exception>
         /// <exception cref="TinyTimeoutException">Tiny client timeout</exception>
-        public static HttpResponse<string> GetAndReceiveText(this HttpClient client, string query) 
-            => client.SendAndReceiveText(HttpClientRequest.CreateGet(query));
+        public static HttpResponse<string> GetAndReceiveText(this HttpClient client, string query, bool throwIfFailed = true) 
+            => client.SendAndReceiveText(HttpClientRequest.CreateGet(query), throwIfFailed);
 
         /// <exception cref="WebException">Channel error</exception>
         /// <exception cref="TinyHttpException">Server side error</exception>
         /// <exception cref="InvalidDataException">Data format error</exception>
         /// <exception cref="TinyTimeoutException">Tiny client timeout</exception>
-        public static HttpResponse<string> PutAndReceiveText<TResponseJsonObject>(this HttpClient client, string query,
-            object jsonSerializeableContent) => client.SendAndReceiveText(HttpClientRequest.CreateJsonPut(query, jsonSerializeableContent));
+        public static HttpResponse<string> PutAndReceiveText(this HttpClient client, string query,
+            object jsonSerializeableContent, bool throwIfFailed = true) => client.SendAndReceiveText(HttpClientRequest.CreateJsonPut(query, jsonSerializeableContent), throwIfFailed);
 
         /// <exception cref="WebException">Channel error</exception>
         /// <exception cref="TinyHttpException">Server side error</exception>
         /// <exception cref="InvalidDataException">Data format error</exception>
         /// <exception cref="TinyTimeoutException">Tiny client timeout</exception>
-        public static HttpResponse<string> PostAndReceiveText<TResponseJsonObject>(this HttpClient client, string query,
-            object jsonSerializeableContent) => client.SendAndReceiveText(HttpClientRequest.CreateJsonPost(query, jsonSerializeableContent));
+        public static HttpResponse<string> PostAndReceiveText(this HttpClient client, string query,
+            object jsonSerializeableContent, bool throwIfFailed = true) => client.SendAndReceiveText(HttpClientRequest.CreateJsonPost(query, jsonSerializeableContent), throwIfFailed);
 
 
         /// <exception cref="WebException">Channel error</exception>
         /// <exception cref="TinyHttpException">Server side error</exception>
         /// <exception cref="InvalidDataException">Data format error</exception>
         /// <exception cref="TinyTimeoutException">Tiny client timeout</exception>
-        public static HttpResponse<string> SendAndReceiveText(this HttpClient client, HttpClientRequest request)
+        public static HttpResponse<string> SendAndReceiveText(this HttpClient client, HttpClientRequest request, bool throwIfFailed = true)
         {
             var response = client.Send(request);
+            if (throwIfFailed)
+                response.ThrowIfFailed();
 
             var stringResponse = response as HttpResponse<String>;
             if (stringResponse == null)
