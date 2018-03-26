@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using TinyClient.Helpers;
 using TinyClient.Response;
 
@@ -36,8 +37,10 @@ namespace TinyClient.Client
 
             try
             {
-                var asyncRequest = CreateRequest(request);
+                var webRequest = CreateRequest(request, out byte[] data);
+                var asyncRequest =  new AsyncRequest(webRequest, data);
                 var res = asyncRequest.Send();
+
                 try
                 {
                     if (request.Timeout.HasValue)
@@ -94,11 +97,10 @@ namespace TinyClient.Client
 
 
         /// <exception cref="InvalidDataException"></exception>
-        private AsyncRequest CreateRequest(HttpClientRequest request)
+        private AsyncRequest CreateRequest(HttpClientRequest request, out  HttpWebRequest webRequest)
         {
             byte[] data;
-            var webRequest = CreateRequest(request, out data);
-
+            webRequest = CreateRequest(request, out data);
             return new AsyncRequest(webRequest, data);
 
         }
