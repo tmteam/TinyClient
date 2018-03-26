@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>TinyClient</id>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <title>Tiny Http Client</title>
     <authors>Tmteam</authors>
     <licenseUrl>https://github.com/tmteam/TinyClient/blob/master/LICENSE</licenseUrl>
