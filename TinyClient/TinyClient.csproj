@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Client\ITinyAsyncRequest.cs" />
     <Compile Include="DeflateEncoder.cs" />
     <Compile Include="Encoders.cs" />
     <Compile Include="Helpers\UriHelper.cs" />

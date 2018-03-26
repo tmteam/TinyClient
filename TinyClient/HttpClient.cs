@@ -18,10 +18,10 @@ namespace TinyClient
             _host = builder.Host;
             _keepAlive = builder.KeepAlive;
             _sender = builder.Sender?? new HttpSenderAsync(_host, builder.Decoders);
+            _sender.UnderlyingAsyncExceptionHandler = builder.AsyncExceptionsHandler;
             Timeout = builder.Timeout;
             _requestPreprocessor = builder.RequestMiddleware;
             _responsePreprocessor = builder.ResponseMiddleware;
-
         }
         public HttpClient(string host, bool keepAlive = true)
         {

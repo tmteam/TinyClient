@@ -7,11 +7,15 @@ using TinyClient.Helpers;
 
 namespace TinyClient.Client
 {
-    public class AsyncRequest
+    public class AsyncRequest : ITinyAsyncRequest
     {
         private readonly WebRequest _request;
         private readonly byte[] _dataOrNull;
         private TaskCompletionSource<HttpWebResponse> _completionSource;
+
+
+        public static AsyncRequest Create(WebRequest request, byte[] dataOrNull) => new AsyncRequest(request,dataOrNull);
+
         public AsyncRequest(WebRequest request, byte[] dataOrNull)
         {
             _request = request;

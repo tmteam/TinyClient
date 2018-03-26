@@ -14,6 +14,12 @@ namespace TinyClient.Client
         private readonly string _host;
         private readonly Dictionary<string, IContentEncoder> _decoders;
         private readonly Dictionary<string, Action<string, HttpWebRequest>> _specialHeadersMap;
+        /// <summary>
+        /// For testing
+        /// </summary>
+        public Func<HttpWebRequest, byte[], ITinyAsyncRequest> AsyncRequestFactory { get; set; } = AsyncRequest.Create;
+
+        public Action<Exception> UnderlyingAsyncExceptionHandler { get; set; } = null;
         public HttpSenderAsync(string host, IEnumerable<IContentEncoder> decoders)
         {
             _host = host;
@@ -38,7 +44,7 @@ namespace TinyClient.Client
             try
             {
                 var webRequest = CreateRequest(request, out byte[] data);
-                var asyncRequest =  new AsyncRequest(webRequest, data);
+                ITinyAsyncRequest asyncRequest = AsyncRequestFactory(webRequest, data);
                 var res = asyncRequest.Send();
 
                 try
@@ -47,26 +53,7 @@ namespace TinyClient.Client
                     {
                         if (!res.Wait(request.Timeout.Value))
                         {
-                            //ignore task exception
-                            res.ContinueWith(task =>
-                            {
-                                if (task.IsCompleted)
-                                {
-                                    try
-                                    {
-                                        task.Result?.Close();
-                                    }
-                                    catch
-                                    {
-                                        // TODO Log exception
-                                    }
-                                }
-                                else
-                                {
-                                    // TODO Log exception
-                                    var e = task.Exception?.GetBaseException();
-                                }
-                            });
+                            HandleTaskResults(res);
 
                             asyncRequest.Abort();
                             throw new TinyTimeoutException($"Request timeout of {request.Timeout.Value} is expired");
@@ -74,16 +61,24 @@ namespace TinyClient.Client
                     }
                     else
                         res.Wait();
+
                     webResponse = res.Result;
                 }
                 catch (AggregateException aggregateException)
                 {
                     var originException = aggregateException.GetBaseException();
 
-                    if (!(originException is WebException webEx))
+                    if ((originException is WebException webEx))
+                    {
+                        webResponse = webEx.Response as HttpWebResponse ?? throw originException;
+                    }
+                    else if (originException is TimeoutException)
+                    {
+                        throw new TinyTimeoutException(originException.Message);
+                    }
+                    else
                         throw originException;
 
-                    webResponse = webEx.Response as HttpWebResponse ?? throw originException;
                 }
 
                 var response = ToResponse(request, webResponse);
@@ -95,21 +90,40 @@ namespace TinyClient.Client
             }
         }
 
-
-        /// <exception cref="InvalidDataException"></exception>
-        private AsyncRequest CreateRequest(HttpClientRequest request, out  HttpWebRequest webRequest)
+        private void HandleTaskResults(Task<HttpWebResponse> res)
         {
-            byte[] data;
-            webRequest = CreateRequest(request, out data);
-            return new AsyncRequest(webRequest, data);
+            res.ContinueWith(t =>
+            {
+                var e = t.Exception?.GetBaseException();
+                if (e != null)
+                    UnderlyingAsyncExceptionHandler?.Invoke(e);
+            }, TaskContinuationOptions.OnlyOnFaulted);
 
+            res.ContinueWith(task =>
+            {
+                if (task.IsCompleted)
+                {
+                    try
+                    {
+                        task.Result?.Close();
+                    }
+                    catch (Exception e)
+                    {
+                        UnderlyingAsyncExceptionHandler?.Invoke(e);
+                    }
+                }
+            }, TaskContinuationOptions.NotOnFaulted);
         }
+
+
         /// <exception cref="InvalidDataException">Request serialization error</exception>
         private HttpWebRequest CreateRequest(HttpClientRequest request, out byte[] data)
         {
             var uri = request.GetUriFor(_host);
             var webRequest = (HttpWebRequest)WebRequest.Create(uri);
             webRequest.Method = request.Method.Name;
+            if(request.Timeout.HasValue)
+                webRequest.Timeout = (int)request.Timeout.Value.TotalMilliseconds;
             if (request.Encoder != null)
             {
                 webRequest.Headers.Add(HttpHelper.ContentEncodingHeader, request.Encoder.EncodingType);
