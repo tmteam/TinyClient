@@ -52,12 +52,12 @@ namespace TinyClient
             if (_requestPreprocessor != null)
                 request = _requestPreprocessor(request);
 
-                var response = _sender.Send(request);
+            var response = _sender.Send(request);
 
-                if (_responsePreprocessor != null)
-                    response = _responsePreprocessor(response);
+            if (_responsePreprocessor != null)
+                response = _responsePreprocessor(response);
 
-                return response;
+            return response;
         }
     }
 }

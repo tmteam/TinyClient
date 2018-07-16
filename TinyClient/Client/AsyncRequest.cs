@@ -47,8 +47,11 @@ namespace TinyClient.Client
         {
             var getRequestTask = Task.Factory
                 .FromAsync(_request.BeginGetRequestStream, _request.EndGetRequestStream, null);
-            getRequestTask.ContinueWith(c => _completionSource.TrySetException(c.Exception.GetBaseException()),
+
+            getRequestTask.ContinueWith(c => _completionSource.TrySetException(
+                    GetExceptionFrom(c, new InvalidOperationException("SendAsync error with no base exception"))),
                 TaskContinuationOptions.OnlyOnFaulted);
+
             getRequestTask.ContinueWith(HandleRequestStream, 
                 TaskContinuationOptions.NotOnFaulted);
         }
@@ -57,11 +60,13 @@ namespace TinyClient.Client
         private void ReceiveAsync()
         {
             var getResponseTask = Task.Factory
-                .FromAsync(_request.BeginGetResponse, _request.EndGetResponse, null);
+                .FromAsync(_request.BeginGetResponse, EndGetResponseWrapping, null);
 
-            getResponseTask.ContinueWith(c => {
-                return _completionSource.TrySetException(c.Exception.GetBaseException());
-            }, TaskContinuationOptions.OnlyOnFaulted);
+            getResponseTask.ContinueWith(
+                c => _completionSource.TrySetException(
+                    GetExceptionFrom(c, 
+                        defaultException:new InvalidOperationException("ReceiveAsync error with no base exception"))), 
+                TaskContinuationOptions.OnlyOnFaulted);
 
             getResponseTask.ContinueWith(HandleResponse, 
                 TaskContinuationOptions.NotOnFaulted);
@@ -100,5 +105,21 @@ namespace TinyClient.Client
             _completionSource.TrySetResult((HttpWebResponse)task.Result);
         }
 
+
+        private WebResponse EndGetResponseWrapping(IAsyncResult result)
+        {
+            return _request.EndGetResponse(result);
+        }
+
+        private Exception GetExceptionFrom(Task t, Exception defaultException)
+        {
+            var e = t.Exception;
+            if (e == null)
+                return defaultException;
+            return e.InnerException 
+                   ?? e.GetBaseException() 
+                   ?? e;
+
+        }
     }
 }

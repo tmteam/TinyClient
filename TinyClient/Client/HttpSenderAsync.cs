@@ -77,7 +77,9 @@ namespace TinyClient.Client
                         throw new TinyTimeoutException(originException.Message);
                     }
                     else
+                    {
                         throw originException;
+                    }
 
                 }
 
