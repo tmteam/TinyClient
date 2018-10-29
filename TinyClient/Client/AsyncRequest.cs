@@ -83,10 +83,18 @@ namespace TinyClient.Client
                 return;
             }
 
-            
             var stream = task.Result;
-            stream.Write(_dataOrNull);
-            ReceiveAsync();
+            var sendStreamTask = Task.Factory
+                .FromAsync((callback, state) => stream.BeginWrite(_dataOrNull, 0, _dataOrNull.Length, callback, state), stream.EndWrite, null);
+
+            sendStreamTask.ContinueWith(
+                c => _completionSource.TrySetException(
+                    GetExceptionFrom(c,
+                        defaultException: new InvalidOperationException("Write Stream Async error with no base exception"))),
+                TaskContinuationOptions.OnlyOnFaulted);
+
+            sendStreamTask.ContinueWith((t) => ReceiveAsync(),
+                TaskContinuationOptions.NotOnFaulted);
         }
 
         private void HandleResponse(Task<WebResponse> task)
