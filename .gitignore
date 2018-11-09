@@ -31,6 +31,12 @@ obj/
 [Rr]elease*/
 Ankh.NoLoad
 
+#rider
+/.idea
+/out
+/target
+*.iml
+
 #InstallShield
 [Ss]ingle[Ii]mage/
 [Dd][Vv][Dd]-5/
@@ -51,3 +57,4 @@ TinyClient*.nupkg
 /.vs/TinyClient/v15/Server/sqlite3/storage.ide
 /.vs/TinyClient/v15/Server/sqlite3/storage.ide-shm
 /.vs/TinyClient/v15/Server/sqlite3/storage.ide-wal
+*.iml
