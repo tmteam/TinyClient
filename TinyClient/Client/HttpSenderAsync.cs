@@ -11,6 +11,7 @@ namespace TinyClient.Client
 {
     public class HttpSenderAsync : IHttpSender
     {
+        private const int MaxUndefinedTimeout = 60 * 60 * 1000;//1 Hour
         private readonly string _host;
         private readonly Dictionary<string, IContentEncoder> _decoders;
         private readonly Dictionary<string, Action<string, HttpWebRequest>> _specialHeadersMap;
@@ -68,19 +69,16 @@ namespace TinyClient.Client
                 {
                     var originException = aggregateException.GetBaseException();
 
-                    if ((originException is WebException webEx))
+                    switch (originException)
                     {
-                        webResponse = webEx.Response as HttpWebResponse ?? throw originException;
+                        case WebException webEx:
+                            webResponse = webEx.Response as HttpWebResponse ?? throw originException;
+                            break;
+                        case TimeoutException _:
+                            throw new TinyTimeoutException(originException.Message);
+                        default:
+                            throw originException;
                     }
-                    else if (originException is TimeoutException)
-                    {
-                        throw new TinyTimeoutException(originException.Message);
-                    }
-                    else
-                    {
-                        throw originException;
-                    }
-
                 }
 
                 var response = ToResponse(request, webResponse);
@@ -117,24 +115,23 @@ namespace TinyClient.Client
             }, TaskContinuationOptions.NotOnFaulted);
         }
 
-
         /// <exception cref="InvalidDataException">Request serialization error</exception>
         private HttpWebRequest CreateRequest(HttpClientRequest request, out byte[] data)
         {
             var uri = request.GetUriFor(_host);
             var webRequest = (HttpWebRequest)WebRequest.Create(uri);
             webRequest.Method = request.Method.Name;
-            if(request.Timeout.HasValue)
-                webRequest.Timeout = (int)request.Timeout.Value.TotalMilliseconds;
+            if (request.Timeout.HasValue)
+                webRequest.Timeout = (int) request.Timeout.Value.TotalMilliseconds;
+            else
+                webRequest.Timeout = MaxUndefinedTimeout;
+
             if (request.Encoder != null)
-            {
                 webRequest.Headers.Add(HttpHelper.ContentEncodingHeader, request.Encoder.EncodingType);
-            }
 
             if (request.Decoder != null)
-            {
                 webRequest.Headers.Add(HttpHelper.AcceptEncodingHeader, request.Decoder.EncodingType);
-            }
+            
             foreach (var header in request.CustomHeaders)
             {
                 if (_specialHeadersMap.ContainsKey(header.Key))
