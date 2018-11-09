@@ -59,13 +59,13 @@ namespace TinyClient.Client
 
         private void ReceiveAsync()
         {
+
             var getResponseTask = Task.Factory
                 .FromAsync(_request.BeginGetResponse, EndGetResponseWrapping, null);
 
             getResponseTask.ContinueWith(
                 c => _completionSource.TrySetException(
-                    GetExceptionFrom(c, 
-                        defaultException:new InvalidOperationException("ReceiveAsync error with no base exception"))), 
+                    GetExceptionFrom(c, new InvalidOperationException("ReceiveAsync error with no base exception"))), 
                 TaskContinuationOptions.OnlyOnFaulted);
 
             getResponseTask.ContinueWith(HandleResponse, 
@@ -89,8 +89,7 @@ namespace TinyClient.Client
 
             sendStreamTask.ContinueWith(
                 c => _completionSource.TrySetException(
-                    GetExceptionFrom(c,
-                        defaultException: new InvalidOperationException("Write Stream Async error with no base exception"))),
+                    GetExceptionFrom(c, new InvalidOperationException("Write Stream Async error with no base exception"))),
                 TaskContinuationOptions.OnlyOnFaulted);
 
             sendStreamTask.ContinueWith((t) => ReceiveAsync(),
