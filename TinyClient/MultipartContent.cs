@@ -9,9 +9,10 @@ namespace TinyClient
 {
     public class MultipartContent : IContent
     {
+        private const string HttpNewLine = "\r\n";
+
         public HttpClientRequest[] SubRequests { get; }
         private readonly string _boundary;
-
         public MultipartContent(HttpClientRequest[] subRequests, string boundary)
         {
             SubRequests = subRequests;
@@ -24,12 +25,19 @@ namespace TinyClient
             
             foreach (var request in SubRequests)
             {
+                //Different operation systems have different default line endings
+                //So we need to specify new line as "\r\n" according to 
+                //Http specification
                 var sb = new StringBuilder();
-                sb.AppendLine(BatchSerializeHelper.GetOpenBoundaryString(_boundary));
-                sb.AppendLine(HttpHelper.HttpRequestContentTypeHeaderString);
-                sb.AppendLine();
-                sb.AppendLine($"{request.Method.Name} {request.QueryAbsolutePath} {HttpHelper.Http11VersionCaption}");
-                sb.AppendLine($"Host: {host.Authority}");
+                sb.Append(BatchSerializeHelper.GetOpenBoundaryString(_boundary));
+                sb.Append(HttpNewLine);
+                sb.Append(HttpHelper.HttpRequestContentTypeHeaderString);
+                sb.Append(HttpNewLine);
+                sb.Append(HttpNewLine);
+                sb.Append($"{request.Method.Name} {request.QueryAbsolutePath} {HttpHelper.Http11VersionCaption}");
+                sb.Append(HttpNewLine);
+                sb.Append($"Host: {host.Authority}");
+                sb.Append(HttpNewLine);
                 stream.WriteUtf8(sb.ToString());
 
                 if (request.Content != null)

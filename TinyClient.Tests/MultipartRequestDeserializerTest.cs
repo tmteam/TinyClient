@@ -13,16 +13,18 @@ namespace TinyClient.Tests
     [TestFixture]
     public class MultipartRequestDeserializerTest
     {
+        private const string CRLF = "\r\n";
+
         [Test]
         public void SingleAnswer_DeserializerIsCorrect()
         {
             var boundary = "batch-1";
 
-            var answerContent = "--batch-1\r\n" +
-                                "Content-Type: application/http; msgtype = response\r\n" +
-                                "HTTP/1.1 204 No Content\r\n" +
-                                "\r\n" +
-                                "\r\n" +
+            var answerContent = $"--batch-1{CRLF}" +
+                                $"Content-Type: application/http; msgtype = response{CRLF}" +
+                                $"HTTP/1.1 204 No Content{CRLF}" +
+                                CRLF +
+                                CRLF +
                                 "--batch-1--";
 
             var typedDeserializer = DeserializeAnswer(
@@ -34,15 +36,15 @@ namespace TinyClient.Tests
         public void SingleAnswer_closeBoundaryIsWrong_DeserializeThrows()
         {
             var boundary = "batch-1";
-            var answerContent = "--batch-1\r\n" +
-                                "Content-Type: application/http; msgtype = response\r\n" +
-                                "HTTP/1.1 204 No Content\r\n" +
-                                "\r\n" +
-                                "\r\n" +
+            var answerContent = $"--batch-1{CRLF}" +
+                                $"Content-Type: application/http; msgtype = response{CRLF}" +
+                                $"HTTP/1.1 204 No Content{CRLF}" +
+                                CRLF + CRLF +
                                 "--batch-1";
 
             var deserializer = new MultipartRequestDeserializer(new[] { new TextResponseDeserialaizer()});
-            Assert.Throws<InvalidDataException>(()=>deserializer.Deserialize(GetFakeInfo(boundary), AsStream(answerContent)));
+            Assert.Throws<InvalidDataException>(
+                ()=>deserializer.Deserialize(GetFakeInfo(boundary), AsStream(answerContent)));
 
         }
 
@@ -50,14 +52,15 @@ namespace TinyClient.Tests
         public void SingleAnswer_closeBoundaryMissed_DeserializeThrows()
         {
             var boundary = "batch-1";
-            var answerContent = "--batch-1\r\n" +
-                                "Content-Type: application/http; msgtype = response\r\n" +
-                                "HTTP/1.1 204 No Content\r\n" +
-                                "\r\n" +
-                                "someContent";
+            var answerContent = $"--batch-1{CRLF}" +
+                                $"Content-Type: application/http; msgtype = response{CRLF}" +
+                                $"HTTP/1.1 204 No Content{CRLF}" +
+                                CRLF +
+                                $"someContent";
 
             var deserializer = new MultipartRequestDeserializer(new[] { new TextResponseDeserialaizer() });
-            Assert.Throws<InvalidDataException>(() => deserializer.Deserialize(GetFakeInfo(boundary), AsStream(answerContent)));
+            Assert.Throws<InvalidDataException>(
+                () => deserializer.Deserialize(GetFakeInfo(boundary), AsStream(answerContent)));
         }
 
         [Test]
@@ -84,11 +87,11 @@ namespace TinyClient.Tests
         public void Single204Answer_Deserialize_ResponseStatusIsCorrect()
         {
             var boundary = "batch-1";
-            var answerContent = "--batch-1\r\n" +
-                                "Content-Type: application/http; msgtype = response\r\n" +
-                                "HTTP/1.1 204 No Content\r\n" +
-                                "\r\n" +
-                                "\r\n" +
+            var answerContent = $"--batch-1{CRLF}" +
+                                $"Content-Type: application/http; msgtype = response{CRLF}" +
+                                $"HTTP/1.1 204 No Content{CRLF}" +
+                                CRLF +
+                                CRLF +
                                 "--batch-1--";
 
             var response =
@@ -107,12 +110,12 @@ namespace TinyClient.Tests
             var boundary = "batch-1";
             var data = "myCustomContent";
 
-            var answerContent = "--batch-1\r\n" +
-                                "Content-Type: application/http; msgtype = response\r\n" +
-                                "HTTP/1.1 204 No Content\r\n" +
-                                "\r\n" +
+            var answerContent = $"--batch-1{CRLF}" +
+                                $"Content-Type: application/http; msgtype = response{CRLF}" +
+                                $"HTTP/1.1 204 No Content{CRLF}" +
+                                CRLF +
                                  data + 
-                                "\r\n" +
+                                CRLF +
                                 "--batch-1--";
 
             var response =
@@ -126,16 +129,16 @@ namespace TinyClient.Tests
         public void TwoAnswers_Deserialize_ResponseStatusesAreCorrect()
         {
             var boundary = "batch-1";
-            var answerContent = "--batch-1\r\n" +
-                                "Content-Type: application/http; msgtype = response\r\n" +
-                                "HTTP/1.1 204 No Content\r\n" +
-                                "\r\n" +
-                                "\r\n" +
-                                "--batch-1\r\n" +
-                                "Content-Type: application/http; msgtype = response\r\n" +
-                                "HTTP/1.1 200 OK\r\n" +
-                                "\r\n" +
-                                "\r\n" +
+            var answerContent = $"--batch-1{CRLF}" +
+                                $"Content-Type: application/http; msgtype = response{CRLF}" +
+                                $"HTTP/1.1 204 No Content{CRLF}" +
+                                CRLF +
+                                CRLF +
+                                $"--batch-1{CRLF}" +
+                                $"Content-Type: application/http; msgtype = response{CRLF}" +
+                                $"HTTP/1.1 200 OK{CRLF}" +
+                                CRLF +
+                                CRLF +
                                 "--batch-1--";
 
             var responses = DeserializeAnswer(
@@ -166,16 +169,16 @@ namespace TinyClient.Tests
             var data2 = "Foo";
 
 
-            var answerContent = "--batch-1\r\n" +
-                                "Content-Type: application/http; msgtype = response\r\n" +
-                                "HTTP/1.1 204 No Content\r\n" +
-                                "\r\n" +
-                                data1 + "\r\n" +
-                                "--batch-1\r\n" +
-                                "Content-Type: application/http; msgtype = response\r\n" +
-                                "HTTP/1.1 204 No Content\r\n" +
-                                "\r\n" +
-                                data2 + "\r\n" +
+            var answerContent = $"--batch-1{CRLF}" +
+                                $"Content-Type: application/http; msgtype = response{CRLF}" +
+                                $"HTTP/1.1 204 No Content{CRLF}" +
+                                CRLF +
+                                data1 + CRLF +
+                                $"--batch-1{CRLF}" +
+                                $"Content-Type: application/http; msgtype = response{CRLF}" +
+                                $"HTTP/1.1 204 No Content{CRLF}" +
+                                CRLF +
+                                data2 + CRLF +
                                 "--batch-1--";
             var responses =
                 DeserializeAnswer(
@@ -197,14 +200,14 @@ namespace TinyClient.Tests
         {
             var boundary = "batch-1";
 
-            var answerContent = "--batch-1\r\n" +
-                                "Content-Type: application/http; msgtype = response\r\n" +
-                                "HTTP/1.1 204 No Content\r\n" +
-                                "\r\n" + "\r\n" +
-                                "--batch-1\r\n" +
-                                "Content-Type: application/http; msgtype = response\r\n" +
-                                "HTTP/1.1 204 No Content\r\n" +
-                                "\r\n" +"\r\n" +
+            var answerContent = $"--batch-1{CRLF}" +
+                                $"Content-Type: application/http; msgtype = response{CRLF}" +
+                                $"HTTP/1.1 204 No Content{CRLF}" +
+                                CRLF + CRLF +
+                                $"--batch-1{CRLF}" +
+                                $"Content-Type: application/http; msgtype = response{CRLF}" +
+                                $"HTTP/1.1 204 No Content{CRLF}" +
+                                CRLF + CRLF +
                                 "--batch-1--";
             var deserializer = new MultipartRequestDeserializer(new[]
             {
@@ -222,18 +225,18 @@ namespace TinyClient.Tests
         {
             var boundary = "batch-1";
 
-            var answerContent = "--batch-1\r\n" +
-                                "Content-Type: application/http; msgtype = response\r\n" +
-                                "HTTP/1.1 204 No Content\r\n" +
-                                "\r\n" + "\r\n" +
-                                "--batch-1\r\n" +
-                                "Content-Type: application/http; msgtype = response\r\n" +
-                                "HTTP/1.1 204 No Content\r\n" +
-                                "\r\n" + "\r\n" +
-                                "--batch-1\r\n" +
-                                "Content-Type: application/http; msgtype = response\r\n" +
-                                "HTTP/1.1 204 No Content\r\n" +
-                                "\r\n" + "\r\n" +
+            var answerContent = $"--batch-1{CRLF}" +
+                                $"Content-Type: application/http; msgtype = response{CRLF}" +
+                                $"HTTP/1.1 204 No Content{CRLF}" +
+                                CRLF + CRLF +
+                                $"--batch-1{CRLF}" +
+                                $"Content-Type: application/http; msgtype = response{CRLF}" +
+                                $"HTTP/1.1 204 No Content{CRLF}" +
+                                CRLF + CRLF +
+                                $"--batch-1{CRLF}" +
+                                $"Content-Type: application/http; msgtype = response{CRLF}" +
+                                $"HTTP/1.1 204 No Content{CRLF}" +
+                                CRLF + CRLF +
                                 "--batch-1--";
             var deserializer = new MultipartRequestDeserializer(new[] { new TextResponseDeserialaizer(), new TextResponseDeserialaizer() });
 
@@ -245,14 +248,14 @@ namespace TinyClient.Tests
         {
             var boundary = "batch-1";
 
-            var answerContent = "--batch-1\r\n" +
-                                "Content-Type: application/http; msgtype = response\r\n" +
-                                "HTTP/1.1 204 No Content\r\n" +
-                                "\r\n" + "\r\n" +
-                                "--batch-1\r\n" +
-                                "Content-Type: application/http; msgtype = response\r\n" +
-                                "HTTP/1.1 204 No Content\r\n" +
-                                "\r\n" + "\r\n";
+            var answerContent = $"--batch-1{CRLF}" +
+                                $"Content-Type: application/http; msgtype = response{CRLF}" +
+                                $"HTTP/1.1 204 No Content{CRLF}" +
+                                CRLF + CRLF +
+                                $"--batch-1{CRLF}" +
+                                $"Content-Type: application/http; msgtype = response{CRLF}" +
+                                $"HTTP/1.1 204 No Content{CRLF}" +
+                                CRLF + CRLF;
             var deserializer = new MultipartRequestDeserializer(
                 new[] { new TextResponseDeserialaizer(), new TextResponseDeserialaizer() });
 
@@ -263,21 +266,18 @@ namespace TinyClient.Tests
         public void ManyAnswers_ResponseLengthIsCorrect()
         {
             var boundary = "batch-1";
-            var answerContent = "--batch-1\r\n" +
-                                "Content-Type: application/http; msgtype = response\r\n" +
-                                "HTTP/1.1 204 No Content\r\n" +
-                                "\r\n" +
-                                "\r\n" +
-                                "--batch-1\r\n" +
-                                "Content-Type: application/http; msgtype = response\r\n" +
-                                "HTTP/1.1 204 No Content\r\n" +
-                                "\r\n" +
-                                "\r\n" +
-                                "--batch-1\r\n" +
-                                "Content-Type: application/http; msgtype = response\r\n" +
-                                "HTTP/1.1 204 No Content\r\n" +
-                                "\r\n" +
-                                "\r\n" +
+            var answerContent = $"--batch-1{CRLF}" +
+                                $"Content-Type: application/http; msgtype = response{CRLF}" +
+                                $"HTTP/1.1 204 No Content{CRLF}" +
+                                CRLF + CRLF +
+                                $"--batch-1{CRLF}" +
+                                $"Content-Type: application/http; msgtype = response{CRLF}" +
+                                $"HTTP/1.1 204 No Content{CRLF}" +
+                                CRLF+CRLF +
+                                $"--batch-1{CRLF}" +
+                                $"Content-Type: application/http; msgtype = response{CRLF}" +
+                                $"HTTP/1.1 204 No Content{CRLF}" +
+                                CRLF + CRLF +
                                 "--batch-1--";
 
             var typedDeserializer = DeserializeAnswer(new[]
@@ -293,7 +293,7 @@ namespace TinyClient.Tests
 
         private ResponseInfo GetFakeInfo(string boundary)
         {
-            return new ResponseInfo(FakeUri, new []
+            return new ResponseInfo(FakeUri, FakeUri.ToString(), new []
             {
                 new KeyValuePair<string, string>("Content-Type",$"multipart/mixed; boundary=\"{boundary}\""), 
             }, HttpStatusCode.OK);

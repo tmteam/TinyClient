@@ -12,6 +12,8 @@ namespace TinyClient.Tests
     [TestFixture]
     public class MultipartContentTest
     {
+        private const string CRLF = "\r\n";
+
         [Test]
         public void CreateWithSingleEmptyGetRequest_WriteTo_ResultIsAsExpected()
         {
@@ -22,11 +24,11 @@ namespace TinyClient.Tests
             var multipartContent = new MultipartContent(new[] { getRequest }, boundary);
             string parsed = GetContentString(host, multipartContent);
 
-            string expected = "--" + boundary + "\r\n" +
-                              "Content-Type: application/http; msgtype=request\r\n\r\n" + //todo: why it is application/http?
-                              $"GET /{query} HTTP/1.1\r\n" +
-                              "Host: www.ya.ru:9090\r\n" +
-                              "\r\n\r\n" + 
+            string expected = "--" + boundary + CRLF +
+                              $"Content-Type: application/http; msgtype=request{CRLF}{CRLF}" + 
+                              $"GET /{query} HTTP/1.1{CRLF}" +
+                              $"Host: www.ya.ru:9090{CRLF}" +
+                              $"{CRLF}{CRLF}" + 
                               "--" + boundary + "--";
             Assert.AreEqual(expected, parsed);
         }
@@ -49,18 +51,15 @@ namespace TinyClient.Tests
 
             string parsed = GetContentString(host, multipartContent);
 
-            string expected = "--" + boundary + "\r\n" +
-                              "Content-Type: application/http; msgtype=request\r\n\r\n" + //todo: why it is application/http?
-                              $"GET /{query1} HTTP/1.1\r\n" +
-                              "Host: www.ya.ru\r\n" +
-                              "\r\n" +
-                              "\r\n" +
-                              "--" + boundary+"\r\n"+
-                              "Content-Type: application/http; msgtype=request\r\n\r\n" + //todo: why it is application/http?
-                              $"GET /{query2} HTTP/1.1\r\n" +
-                              "Host: www.ya.ru\r\n" +
-                              "\r\n" +
-                              "\r\n" +
+            string expected = "--" + boundary + CRLF +
+                              $"Content-Type: application/http; msgtype=request{CRLF}{CRLF}" + 
+                              $"GET /{query1} HTTP/1.1{CRLF}" +
+                              $"Host: www.ya.ru{CRLF}{CRLF}{CRLF}" +
+                              $"--" + boundary+CRLF+
+                              $"Content-Type: application/http; msgtype=request{CRLF}{CRLF}" + 
+                              $"GET /{query2} HTTP/1.1{CRLF}" +
+                              $"Host: www.ya.ru{CRLF}{CRLF}{CRLF}" +
+                              
                               "--" + boundary + "--";
             Assert.AreEqual(expected, parsed);
         }
@@ -85,12 +84,12 @@ namespace TinyClient.Tests
 
             string vmSerialized = JsonHelper.Serialize(vm);
 
-            string expected = "--" + boundary + "\r\n" +
-                              "Content-Type: application/http; msgtype=request\r\n\r\n" +
-                              $"POST /{query} HTTP/1.1\r\n" +
-                              "Host: www.ya.ru:9090\r\n" +
-                              "Content-Type: application/json; charset=utf-8\r\n\r\n" +
-                              vmSerialized+"\r\n"+
+            string expected = "--" + boundary + CRLF +
+                              $"Content-Type: application/http; msgtype=request{CRLF}{CRLF}" +
+                              $"POST /{query} HTTP/1.1{CRLF}" +
+                              $"Host: www.ya.ru:9090{CRLF}" +
+                              $"Content-Type: application/json; charset=utf-8{CRLF}{CRLF}" +
+                              vmSerialized+CRLF+
                               "--" + boundary + "--";
             Assert.AreEqual(expected, parsed);
         }
@@ -127,18 +126,18 @@ namespace TinyClient.Tests
             string vm2Serialized = JsonHelper.Serialize(vm2);
 
 
-            string expected = "--" + boundary + "\r\n" +
-                              "Content-Type: application/http; msgtype=request\r\n\r\n" +
-                              $"PUT /{query1} HTTP/1.1\r\n" +
-                              "Host: localhost:9090\r\n" +
-                              "Content-Type: application/json; charset=utf-8\r\n\r\n" +
-                              vm1Serialized + "\r\n" +
-                              "--" + boundary + "\r\n"+
-                              "Content-Type: application/http; msgtype=request\r\n\r\n" +
-                              $"PUT /{query2} HTTP/1.1\r\n" +
-                              "Host: localhost:9090\r\n" +
-                              "Content-Type: application/json; charset=utf-8\r\n\r\n" +
-                              vm2Serialized + "\r\n" +
+            string expected = "--" + boundary + CRLF +
+                              $"Content-Type: application/http; msgtype=request{CRLF}{CRLF}" +
+                              $"PUT /{query1} HTTP/1.1{CRLF}" +
+                              $"Host: localhost:9090{CRLF}" +
+                              $"Content-Type: application/json; charset=utf-8{CRLF}{CRLF}" +
+                              vm1Serialized + CRLF +
+                              "--" + boundary + CRLF+
+                              "Content-Type: application/http; msgtype=request"+ CRLF+ CRLF +
+                              $"PUT /{query2} HTTP/1.1{CRLF}" +
+                              $"Host: localhost:9090{CRLF}" +
+                              "Content-Type: application/json; charset=utf-8" + CRLF+ CRLF+
+                              vm2Serialized + CRLF +
                               "--" + boundary + "--";
             Assert.AreEqual(expected, parsed);
         }
