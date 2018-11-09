@@ -28,6 +28,7 @@ namespace TinyClient.Helpers
                 ans.Append(paths.Last().TrimStart('/'));
             return ans.ToString();
         }
+        
         public static string SerializeUriParam(object paramValue)
         {
             var type = paramValue.GetType();
@@ -48,6 +49,7 @@ namespace TinyClient.Helpers
             var convertible = paramValue as IConvertible;
             return convertible?.ToString(CultureInfo.InvariantCulture) ?? paramValue.ToString();
         }
+        
         public static string CreateQuery(IEnumerable<KeyValuePair<string, string>> uriParams)
         {
             return String.Join("&",
@@ -68,6 +70,7 @@ namespace TinyClient.Helpers
 
             return '/'+path.TrimStart('/');
         }
+        
         public static Uri BuildUri(string host, string subQuery, IEnumerable<KeyValuePair<string, string>> uriParams)
         {
             var query = GetQuery(subQuery, uriParams);
@@ -89,6 +92,7 @@ namespace TinyClient.Helpers
                 throw new ArgumentException($"invalid uri. Host: {host}, query: {query}");
             }
         }
+        
         public static void Write(this Stream stream, byte[] data)
         {
             stream.Write(data, 0, data.Length);
@@ -108,7 +112,6 @@ namespace TinyClient.Helpers
 
         private static byte[] UrlEncode(byte[] bytes, int offset, int count)
         {
-
             int cSpaces = 0;
             int cUnsafe = 0;
 
@@ -158,6 +161,7 @@ namespace TinyClient.Helpers
 
             return expandedBytes;
         }
+        
         // Set of safe chars, from RFC 1738.4 minus '+'
         private static bool IsUrlSafeChar(char ch)
         {
@@ -178,6 +182,7 @@ namespace TinyClient.Helpers
 
             return false;
         }
+        
         private static char IntToHex(int n)
         {
             if (n <= 9)
