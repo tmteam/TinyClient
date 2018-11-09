@@ -11,7 +11,10 @@ namespace TinyClient.Response
             Source = info.Source;
             Headers = info.Headers;
             StatusCode = info.StatusCode;
+            RequestUrl = info.RequestUrl;
         }
+
+        public string RequestUrl { get; }
         public Uri Source { get; }
         public KeyValuePair<string, string>[] Headers { get; }
         public HttpStatusCode StatusCode { get; }

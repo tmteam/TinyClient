@@ -162,7 +162,12 @@ namespace TinyClient.Client
                 var responseHeaders = new Dictionary<string, string>();
                 foreach (var key in webResponse.Headers.AllKeys)
                     responseHeaders.Add(key, webResponse.Headers.Get(key));
-                var responseInfo = new ResponseInfo(webResponse.ResponseUri, responseHeaders.ToArray(), webResponse.StatusCode);
+                
+                var responseInfo = new ResponseInfo(
+                    source:     webResponse.ResponseUri, 
+                    requestUrl: request.QueryAbsolutePath,
+                    headers:    responseHeaders.ToArray(), 
+                    statusCode: webResponse.StatusCode);
 
                 var stream = webResponse.GetResponseStream();
 

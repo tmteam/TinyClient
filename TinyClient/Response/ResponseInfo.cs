@@ -7,24 +7,39 @@ namespace TinyClient.Response
 {
     public class ResponseInfo
     {
-        public ResponseInfo(HttpStatusCode statusCode): this(null, new KeyValuePair<string, string>[0], statusCode )
-        {
-
-        }
-        public ResponseInfo(Uri source, KeyValuePair<string, string>[] headers, HttpStatusCode statusCode)
+        
+        public ResponseInfo(Uri source, string requestUrl, KeyValuePair<string, string>[] headers, HttpStatusCode statusCode)
         {
             Source = source;
+            RequestUrl = requestUrl;
             Headers = headers;
             StatusCode = statusCode;
         }
-
+        /// <summary>
+        /// (optional) Response uri
+        /// </summary>
         public Uri Source { get; }
-
-        public string GetHeaderValueOrNull(string headerName)
-        {
-            return Headers.FirstOrDefault(h => h.Key == headerName).Value;
-        }
+        
+        /// <summary>
+        /// Request url
+        /// </summary>
+        public string RequestUrl { get; }
+        
+        /// <summary>
+        /// Returns specified header value or null if it not exists
+        /// Case-sensivityy
+        /// </summary>
+        public string GetHeaderValueOrNull(string headerName) 
+            => Headers.FirstOrDefault(h => h.Key == headerName).Value;
+        
+        /// <summary>
+        /// Headers collection
+        /// </summary>
         public KeyValuePair<string, string>[] Headers { get; }
+        
+        /// <summary>
+        /// Response status code
+        /// </summary>
         public HttpStatusCode StatusCode { get; }
        
     }

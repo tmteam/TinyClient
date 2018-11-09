@@ -30,7 +30,7 @@ namespace TinyClient.Response
                 {
                     while (true)
                     {
-                        var subrequest = ParseNextSubresponseFrom(reader, boundary);
+                        var subrequest = ParseNextSubresponseFrom(reader, boundary,responseInfo);
                         subresponses.Add(subrequest);
                         if (reader.PeekLine() == BatchSerializeHelper.GetCloseBoundaryString(boundary))
                             break;
@@ -44,7 +44,10 @@ namespace TinyClient.Response
         }
 
         /// <exception cref="InvalidDataException"></exception>
-        private HttpResponse<string> ParseNextSubresponseFrom(PeekableStreamReader reader, string boundary)
+        private HttpResponse<string> ParseNextSubresponseFrom(
+            PeekableStreamReader reader, 
+            string boundary, 
+            ResponseInfo generalResponseInfo)
         {
             var currentLine = reader.ReadFirstNonEmptyLine();
             if (currentLine != BatchSerializeHelper.GetOpenBoundaryString(boundary))
@@ -59,13 +62,15 @@ namespace TinyClient.Response
 
             var resultCode = BatchSerializeHelper.GetResultCodeOrThrow(currentLine);
 
-            
-
             var content = BatchSerializeHelper.ReadUntilBoundaryOrThrow(reader, boundary);
 
-            return new HttpResponse<string>(
-                new ResponseInfo((HttpStatusCode) resultCode),
-                content);
+                return new HttpResponse<string>(
+                    responseInfo: new ResponseInfo(
+                        source:     generalResponseInfo?.Source, 
+                        requestUrl: generalResponseInfo?.RequestUrl,
+                        headers:    new KeyValuePair<string, string>[0],
+                        statusCode: (HttpStatusCode) resultCode),
+                    content: content);
         }
 
      

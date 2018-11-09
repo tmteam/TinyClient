@@ -15,6 +15,7 @@ namespace TinyClient
             Content = content;
         }
 
+        public string RequestUrl => _responseInfo.RequestUrl;
         public Uri Source => _responseInfo.Source;
         public KeyValuePair<string, string>[] Headers => _responseInfo.Headers;
         public HttpStatusCode StatusCode => _responseInfo.StatusCode;
