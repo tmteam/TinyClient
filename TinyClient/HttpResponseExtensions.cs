@@ -10,6 +10,24 @@ namespace TinyClient
 {
     public static class HttpResponseExtensions
     {
+
+        /// <exception cref="TinyHttpException"></exception>
+        public static IHttpResponse ThrowIf5xx(this IHttpResponse response)
+        {
+            if (response.IsNot5xx())
+                return response;
+            throw new TinyHttpException(response);
+        }
+
+        /// <exception cref="TinyHttpException"></exception>
+        public static IHttpResponse ThrowIfNot2xx(this IHttpResponse response)
+        {
+            if (response.Is2xx())
+                return response;
+            throw new TinyHttpException(response);
+        }
+
+        [Obsolete("Method is deprecated. Use ThrowIfNot2xx instead")]
         /// <exception cref="TinyHttpException"></exception>
         public static IHttpResponse ThrowIfFailed(this IHttpResponse response)
         {
@@ -47,7 +65,24 @@ namespace TinyClient
         {
             return (response as HttpResponse<string>)?.Content;
         }
+        /// <summary>
+        /// returns if status code NOT in 500 and 599 inclusive 
+        /// </summary>
+        public static bool IsNot5xx(this IHttpResponse response)
+        {
+            int code = (int)response.StatusCode;
+            return code < 500 || code >= 500;
+        }
+        /// <summary>
+        /// returns if status code between 200 and 299 inclusive 
+        /// </summary>
+        public static bool Is2xx(this IHttpResponse response)
+        {
+            int code = (int)response.StatusCode;
+            return code >= 200 && code < 300;
+        }
 
+        [Obsolete]
         public static bool IsSuccessStatusCode(this IHttpResponse response)
         {
             int code = (int)response.StatusCode;

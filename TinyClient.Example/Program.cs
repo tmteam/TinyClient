@@ -32,7 +32,7 @@ namespace HttpClientChannel.TestApplication
                 //Send and receive
                 .SendJsonPost("users", new MyRequestVM {Name = "Bender"})
                 //Throw if status code not in [200-299]
-                .ThrowIfFailed()
+                .ThrowIfNot2xx()
                 //Cast answer from json to MyAnswerVm or throw
                 .GetJsonObject<MyAnswerVm>();
 
