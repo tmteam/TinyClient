@@ -7,7 +7,22 @@ namespace TinyClient.Response
 {
     public class ResponseInfo
     {
-        
+        [Obsolete("ctor is deprecated. It will be removed in future releases")]
+        public ResponseInfo(HttpStatusCode statusCode)
+        {
+            Source = null ;
+            RequestUrl = "";
+            Headers = new KeyValuePair<string, string>[0];
+            StatusCode = statusCode;
+        }
+        [Obsolete("ctor is deprecated. It will be removed in future releases")]
+        public ResponseInfo(Uri source, KeyValuePair<string, string>[] headers, HttpStatusCode statusCode)
+        {
+            Source = source;
+            RequestUrl = "";
+            Headers = headers;
+            StatusCode = statusCode;
+        }
         public ResponseInfo(Uri source, string requestUrl, KeyValuePair<string, string>[] headers, HttpStatusCode statusCode)
         {
             Source = source;
