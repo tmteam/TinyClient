@@ -27,7 +27,7 @@ var answer = client
     .Create("localhost:8080")
     .Build()
     .SendJsonPost("users", new MyRequestVM {Name = "Bender"})
-    .ThrowIfFailed()
+    .ThrowIfNot2xx()
     .GetJsonObject<MyAnswerVm>();
 
 Console.WriteLine(answer.Name);
@@ -86,7 +86,7 @@ try
 		//throws WebException (connection errors) or TinyTimeoutException:WebException
 		.SendGet("users")
 		//throws TinyWebException: WebException (status errors)
-		.ThrowIfFailed()
+		.ThrowIfNot2xx()
 		//throws InvalidDataException 
 		.GetJsonObject<MyAnswerVm>();
 		
@@ -119,7 +119,7 @@ try
 		//throws WebException (connection errors) or TimeoutException
 		.SendGet("users");
 		
-	if (response.IsSuccesfully()) {
+	if (response.IsNot5xx()) {
 		//handle the response
 	} else {
 		//handle bad status code
